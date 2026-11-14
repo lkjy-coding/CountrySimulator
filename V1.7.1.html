@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>成就表国家发展模拟器 v1.7.1</title>
+<style>
+*{box-sizing:border-box;font-family:system-ui,sans-serif;margin:0;padding:0}
+:root{--bg-body:#0e1a1e;--bg-panel:#0d1c20;--bg-header:#0a1518;--bg-input:#0d1c20;--border:#1a3439;--text:#dce8e8;--text2:#7a9a9a;--hl:#e8c860;--green:#7ab84a;--btn:#1a3238;--btn-hover:#2a4e55;--danger:#5a2e2e;--success:#1a5a3a}
+body{background:var(--bg-body);color:var(--text);display:flex;justify-content:center;padding:8px;min-height:100vh}
+#app{max-width:1500px;width:100%;display:flex;flex-direction:column;gap:8px}
+header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;background:var(--bg-header);padding:8px 14px;border-radius:14px;border:1px solid var(--border)}
+h1{margin:0;font-weight:300;font-size:1.15rem;background:linear-gradient(135deg,#8fc89a,#5a9a6a);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.toolbar button{background:var(--btn);border:none;color:var(--text);padding:6px 14px;border-radius:18px;cursor:pointer;font-size:.72rem;transition:.12s}
+.toolbar button:hover{background:var(--btn-hover)}
+.tabs{display:flex;gap:3px;border-bottom:1px solid var(--border);padding-bottom:4px;flex-wrap:wrap}
+.tabs button{background:transparent;border:none;color:var(--text2);padding:7px 14px;border-radius:10px 10px 0 0;cursor:pointer;font-size:.74rem;transition:.12s}
+.tabs button.active{color:var(--text);background:var(--bg-panel);border:1px solid var(--border);border-bottom-color:var(--bg-panel)}
+.tab-content{display:none;padding:8px 0}
+.tab-content.active{display:block}
+.panel{background:var(--bg-panel);border-radius:12px;padding:14px 16px;border:1px solid var(--border);margin-bottom:10px}
+.panel h2{font-weight:300;font-size:.92rem;margin:0 0 10px;border-bottom:1px solid var(--border);padding-bottom:6px}
+.btn-group{display:flex;flex-wrap:wrap;gap:12px;margin:8px 0}
+.btn-group button{background:var(--btn);border:none;color:var(--text);padding:10px 18px;border-radius:16px;cursor:pointer;font-size:.78rem;transition:.12s;min-width:140px;text-align:center;line-height:1.4}
+.btn-group button:hover{background:var(--btn-hover);transform:scale(0.97)}
+.btn-group button:active{transform:scale(0.95)}
+.danger{background:var(--danger)!important}
+.danger:hover{background:#7a3e3e!important}
+.success{background:var(--success)!important}
+.success:hover{background:#2a7a4a!important}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:2px 12px}
+.stat-item{display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px dotted var(--border);font-size:.72rem}
+.stat-label{color:var(--text2)}
+.stat-value{font-weight:500}
+.event-log{background:var(--bg-input);border-radius:8px;padding:6px 10px;max-height:140px;overflow-y:auto;font-size:.7rem;border:1px solid var(--border)}
+.event-log div{padding:2px 0;border-bottom:1px solid var(--border);color:var(--text2)}
+.event-log .highlight{color:var(--hl)}
+.event-log .detail{color:#8ab0b0;font-size:.65rem}
+.event-log .warning{color:#e8a060}
+.event-log .danger{color:#e86060}
+.tag{background:var(--bg-input);border-radius:10px;padding:1px 8px;font-size:.6rem;color:var(--text2);border:1px solid var(--border)}
+.progress{background:var(--bg-input);height:4px;border-radius:4px;margin:4px 0}
+.progress-fill{height:4px;border-radius:4px;background:var(--green);width:0%;transition:width .3s}
+.ach-container{max-height:220px;overflow-y:auto;display:flex;flex-wrap:wrap;gap:2px}
+.ach-item{background:#13282c;border-radius:10px;padding:2px 8px;font-size:.58rem;margin:1px;border:1px solid #1a3a3f}
+.ach-desc{font-size:.48rem;color:var(--text2);display:block}
+.shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin-top:6px}
+.shop-item{background:var(--bg-panel);border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+.shop-item .name{font-weight:500;font-size:.78rem}
+.shop-item .price{color:var(--hl);font-size:.7rem}
+.shop-item .desc{color:var(--text2);font-size:.58rem;margin:4px 0}
+.shop-item button{background:var(--btn);border:none;color:var(--text);padding:6px 14px;border-radius:14px;cursor:pointer;font-size:.65rem;margin-top:4px;min-width:80px}
+.shop-item button:hover{background:var(--btn-hover)}
+.redeem-area{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
+.redeem-area input{background:var(--bg-input);border:1px solid var(--border);color:var(--text);border-radius:12px;padding:5px 12px;font-size:.72rem;width:220px}
+#developerConfession{margin-top:6px;background:var(--bg-input);border-radius:8px;padding:6px 10px;font-size:.58rem;color:var(--text2);max-height:120px;overflow-y:auto;border:1px solid var(--border)}
+.confession-item{border-top:1px solid var(--border);padding:3px 0}
+.status-bar{display:flex;gap:8px;flex-wrap:wrap;font-size:.6rem;color:var(--text2);margin-top:4px}
+.memory-timeline{max-height:140px;overflow-y:auto;font-size:.65rem}
+.memory-item{padding:3px 0;border-bottom:1px solid var(--border)}
+.memory-positive{color:var(--green)}
+.memory-negative{color:#e86060}
+.city-list{max-height:120px;overflow-y:auto;font-size:.65rem}
+.city-item{padding:2px 0;border-bottom:1px solid var(--border)}
+#tutorialOverlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.75);display:none;justify-content:center;align-items:center;z-index:9999}
+#tutorialOverlay.show{display:flex}
+#tutorialBox{background:var(--bg-panel);border:2px solid var(--border);border-radius:18px;padding:24px 32px;max-width:500px;width:90%;text-align:center;color:var(--text)}
+#tutorialBox h2{font-weight:300;font-size:1.05rem;margin-bottom:10px}
+#tutorialBox p{font-size:.85rem;line-height:1.6;color:var(--text2);margin-bottom:14px}
+#tutorialBox button{background:var(--success);border:none;color:#fff;padding:8px 26px;border-radius:20px;cursor:pointer;font-size:.85rem}
+.footer{font-size:.5rem;text-align:center;opacity:.35;margin-top:6px}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--bg-header)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+@media(max-width:720px){.stat-grid{grid-template-columns:1fr 1fr}.shop-grid{grid-template-columns:1fr 1fr}.tabs button{padding:5px 8px;font-size:.65rem}h1{font-size:.95rem}.btn-group button{min-width:120px;padding:8px 12px;font-size:.72rem}}
+@media(max-width:480px){.stat-grid{grid-template-columns:1fr}.shop-grid{grid-template-columns:1fr}.btn-group{flex-direction:column;gap:8px}.btn-group button{width:100%;min-width:unset}}
+</style>
+</head>
+<body>
+<div id="app">
+<header>
+<h1>🌍 成就表国家发展模拟器 v1.7.1</h1>
+<div class="toolbar">
+<span id="dateDisplay" style="font-size:.7rem;">元年 1月1日</span>
+<button onclick="toggleTheme()">🌓</button>
+<button id="pauseBtn">⏸️</button>
+<button onclick="exportSave()">💾</button>
+<button onclick="document.getElementById('fileInput').click()">📂</button>
+<input type="file" id="fileInput" accept=".txt" style="display:none">
+<button id="rollbackBtn">⏪</button>
+</div>
+</header>
+
+<div class="tabs">
+<button class="active" data-tab="tab-overview">📊 概况</button>
+<button data-tab="tab-build">⚒️ 建设</button>
+<button data-tab="tab-resource">🏭 资源</button>
+<button data-tab="tab-city">🏙️ 城市</button>
+<button data-tab="tab-diplomacy">🤝 外交</button>
+<button data-tab="tab-dark">🕶️ 暗得</button>
+<button data-tab="tab-health">🏥 健康</button>
+<button data-tab="tab-society">👥 社会</button>
+<button data-tab="tab-memory">📜 记忆</button>
+<button data-tab="tab-shop">🏪 商店</button>
+<button data-tab="tab-redeem">🎁 兑换码</button>
+<button data-tab="tab-achievements">🏆 成就</button>
+<button data-tab="tab-settings">⚙️ 设置</button>
+</div>
+
+<!-- 概况 -->
+<div id="tab-overview" class="tab-content active">
+<div class="panel">
+<div class="stat-grid">
+<div class="stat-item"><span class="stat-label">人口</span><span class="stat-value" id="popTotal">100</span></div>
+<div class="stat-item"><span class="stat-label">劳动人口</span><span class="stat-value" id="popLabor">50</span></div>
+<div class="stat-item"><span class="stat-label">军人</span><span class="stat-value" id="popArmy">0</span></div>
+<div class="stat-item"><span class="stat-label">房屋</span><span class="stat-value" id="houseStats">0/0/0</span></div>
+<div class="stat-item"><span class="stat-label">粮食</span><span class="stat-value" id="foodStats">200</span></div>
+<div class="stat-item"><span class="stat-label">木材</span><span class="stat-value" id="woodStats">6</span></div>
+<div class="stat-item"><span class="stat-label">矿石</span><span class="stat-value" id="oreStats">0</span></div>
+<div class="stat-item"><span class="stat-label">钢筋</span><span class="stat-value" id="steelStats">0</span></div>
+<div class="stat-item"><span class="stat-label">经济</span><span class="stat-value" id="moneyStats">0</span></div>
+<div class="stat-item"><span class="stat-label">交通</span><span class="stat-value" id="roadStats">0</span></div>
+<div class="stat-item"><span class="stat-label">幸福度</span><span class="stat-value" id="happiness">100</span></div>
+<div class="stat-item"><span class="stat-label">科技</span><span class="stat-value" id="techLevel">0</span></div>
+<div class="stat-item"><span class="stat-label">耕地</span><span class="stat-value" id="farmland">0</span></div>
+<div class="stat-item"><span class="stat-label">医院</span><span class="stat-value" id="hospitalCount">0</span></div>
+<div class="stat-item"><span class="stat-label">健康度</span><span class="stat-value" id="health">100</span></div>
+<div class="stat-item"><span class="stat-label">犯罪率</span><span class="stat-value" id="crimeRate">0%</span></div>
+<div class="stat-item"><span class="stat-label">国际信誉</span><span class="stat-value" id="intlRep">50</span></div>
+<div class="stat-item"><span class="stat-label">居民收入</span><span class="stat-value" id="incomeDisplay">100</span></div>
+<div class="stat-item"><span class="stat-label">生活成本</span><span class="stat-value" id="costDisplay">80</span></div>
+<div class="stat-item"><span class="stat-label">暗得代币</span><span class="stat-value" id="darkToken">0</span></div>
+</div>
+<div class="progress"><div class="progress-fill" id="happinessBar" style="width:100%"></div></div>
+<div class="status-bar">
+<span class="tag">伐木 Lv.<span id="lumberLevel">1</span></span>
+<span class="tag">采矿 Lv.<span id="mineLevel">0</span></span>
+<span class="tag">免费医疗 <span id="freeMedicalDisplay">关</span></span>
+<span id="famineInfo" style="color:#c07050;"></span>
+<span id="pandemicInfo" style="color:#c05050;"></span>
+<span id="protectionInfo" style="color:#60b0b0;"></span>
+</div>
+</div>
+<div class="panel">
+<div style="display:flex;justify-content:space-between;flex-wrap:wrap;align-items:center;">
+<span style="font-weight:300;font-size:.85rem;">🌦️ 天气 · 事件 <span id="weatherDisplay" style="font-weight:300;font-size:.78rem;">☀️ 晴</span></span>
+<span style="font-size:.65rem;color:var(--text2);" id="diplomacyInfo">建交: 0 | 断交: 0</span>
+</div>
+<div style="display:flex;gap:8px;margin:6px 0;font-size:.62rem;align-items:center;">
+<span>日志:</span>
+<button id="logSimple" class="active" onclick="setLogMode('simple')" style="background:var(--btn);border:none;color:var(--text);padding:3px 12px;border-radius:12px;cursor:pointer;font-size:.6rem;">简略</button>
+<button id="logDetail" onclick="setLogMode('detail')" style="background:var(--btn);border:none;color:var(--text);padding:3px 12px;border-radius:12px;cursor:pointer;font-size:.6rem;">详细</button>
+</div>
+<div class="event-log" id="eventLog">
+<div>🏁 欢迎来到成就表国家发展模拟器 v1.7.1！</div>
+</div>
+</div>
+</div>
+
+<!-- 建设 -->
+<div id="tab-build" class="tab-content">
+<div class="panel"><h2>🏠 房屋建设</h2>
+<div class="btn-group">
+<button onclick="buildVillage()">🏡 木屋<br><span style="font-size:.62rem;color:var(--text2);">50木+2300💰</span></button>
+<button onclick="buildStoneHouse()">🏰 牢屋<br><span style="font-size:.62rem;color:var(--text2);">30木+30钢+6000💰</span></button>
+<button onclick="buildStrongHouse()">🏯 坚屋<br><span style="font-size:.62rem;color:var(--text2);">150钢+36000💰</span></button>
+</div></div>
+<div class="panel"><h2>🛤️ 交通建设</h2>
+<div class="btn-group">
+<button onclick="buildRoad()">🛤️ 修路<br><span style="font-size:.62rem;color:var(--text2);">3钢+80💰</span></button>
+</div></div>
+<div class="panel"><h2>🏥 医疗与教育</h2>
+<div class="btn-group">
+<button onclick="buildHospital()">🏥 建医院<br><span style="font-size:.62rem;color:var(--text2);">32000💰+3600钢</span></button>
+<button onclick="buildSchool()">🏫 建学校<br><span style="font-size:.62rem;color:var(--text2);">5000钢+30000💰+2000木</span></button>
+<button onclick="buildWarningCenter()">📡 预警中心<br><span style="font-size:.62rem;color:var(--text2);">8000钢+50000💰+2000木</span></button>
+<button onclick="buildPsychCenter()">🧠 心理咨询站<br><span style="font-size:.62rem;color:var(--text2);">5000钢+30000💰+2000木</span></button>
+<button onclick="buildCommunityNet()">🤝 社区网络<br><span style="font-size:.62rem;color:var(--text2);">2000钢+15000💰+1000木</span></button>
+<button onclick="buildSpecialtyHospital()">🏥 专科医院<br><span style="font-size:.62rem;color:var(--text2);">20000钢+150000💰+5000木</span></button>
+<button onclick="buildOccupationalCenter()">🦺 职业病防治中心<br><span style="font-size:.62rem;color:var(--text2);">8000钢+50000💰+2000木</span></button>
+</div></div>
+<div class="panel"><h2>⚔️ 军事</h2>
+<div class="btn-group">
+<button onclick="recruitArmy()">⚔️ 招军</button>
+</div></div>
+</div>
+
+<!-- 资源 -->
+<div id="tab-resource" class="tab-content">
+<div class="panel"><h2>🌲 伐木场</h2>
+<div class="btn-group"><button onclick="upgradeLumber()">🪓 升级伐木场</button></div></div>
+<div class="panel"><h2>⛰️ 采矿场</h2>
+<div class="btn-group"><button onclick="upgradeMine()">⛏️ 升级采矿场</button></div></div>
+<div class="panel"><h2>🌱 耕地</h2>
+<div class="btn-group"><button onclick="buildFarm()">🌱 开垦耕地<br><span style="font-size:.62rem;color:var(--text2);">2木</span></button></div></div>
+<div class="panel"><h2>🧱 合成</h2>
+<div class="btn-group">
+<button onclick="synthesizeSteel()">🧱 合钢<br><span style="font-size:.62rem;color:var(--text2);">2矿</span></button>
+<button onclick="autoSynthesize()">⚙️ 一键合成</button>
+</div></div>
+<div class="panel"><h2>🔬 科技</h2>
+<div class="btn-group"><button onclick="techResearch()">🔬 研究<br><span style="font-size:.62rem;color:var(--text2);">5木+8矿</span></button></div></div>
+</div>
+
+<!-- 城市 -->
+<div id="tab-city" class="tab-content">
+<div class="panel"><h2>🏙️ 城市管理</h2>
+<div class="btn-group"><button onclick="foundCity()">+ 建城<br><span style="font-size:.62rem;color:var(--text2);">10000💰+1000木+500钢</span></button></div>
+<div class="city-list" id="cityList" style="margin-top:8px;"></div>
+</div>
+</div>
+
+<!-- 外交 -->
+<div id="tab-diplomacy" class="tab-content">
+<div class="panel"><h2>🤝 外交关系</h2>
+<div style="font-size:.78rem;display:grid;grid-template-columns:1fr 1fr;gap:4px;">
+<div>建交: <span id="diploAllies">0</span></div>
+<div>断交: <span id="diploPeace">0</span></div>
+<div>国际信誉: <span id="intlRep2">50</span></div>
+<div>外交能力: <span id="diploPower">0</span>%</div>
+</div>
+<div class="btn-group" style="margin-top:8px;">
+<button onclick="addDiplomacy()">🤝 尝试建交</button>
+<button onclick="addDiplomacy()" class="danger">💔 主动断交</button>
+</div>
+<div style="margin-top:6px;font-size:.68rem;" id="diploStances"></div>
+</div>
+</div>
+
+<!-- 暗得渠道 -->
+<div id="tab-dark" class="tab-content">
+<div class="panel"><h2>🕶️ 暗得渠道</h2>
+<div style="font-size:.6rem;color:#8ab0b0;margin-bottom:6px;">
+本游戏及其开发者十分清楚毒品的危害，并坚决不碰毒品，坚决抵制制毒贩毒吸毒等违法犯罪行为。以下涉及毒品及其原理的内容仅用于虚拟游戏开发及警示作用，不对玩家进行诱导、暗示。
+</div>
+<div style="font-size:.78rem;display:grid;grid-template-columns:1fr 1fr;gap:4px;">
+<div>暗得代币: <span id="darkToken2">0</span></div>
+<div>已进口: <span id="darkImported">0</span></div>
+</div>
+<div class="btn-group" style="margin-top:8px;">
+<button onclick="openDarkMarket()">📦 进入暗得市场</button>
+<button onclick="exportForTokens()">📤 出口换取代币</button>
+<button onclick="prohibitionAction()">🚫 执行禁绝</button>
+</div>
+<div style="font-size:.6rem;color:#e8a060;margin-top:6px;" id="darkStatus"></div>
+</div>
+</div>
+
+<!-- 健康 -->
+<div id="tab-health" class="tab-content">
+<div class="panel"><h2>🏥 国民健康系统</h2>
+<div style="font-size:.78rem;display:grid;grid-template-columns:1fr 1fr;gap:4px;">
+<div>健康度: <span id="healthDisplay2">100</span></div>
+<div>医院: <span id="hospitalCount2">0</span></div>
+<div>心理咨询站: <span id="psychCenterCount">0</span></div>
+<div>社区网络: <span id="communityNetCount">0</span></div>
+<div>专科医院: <span id="specialtyHospital">0</span></div>
+<div>职业病防治中心: <span id="occupationalCenter">0</span></div>
+</div>
+</div>
+</div>
+
+<!-- 社会 -->
+<div id="tab-society" class="tab-content">
+<div class="panel"><h2>👥 居民收入与生活成本</h2>
+<div style="font-size:.78rem;display:grid;grid-template-columns:1fr 1fr;gap:4px;">
+<div>居民收入: <span id="incomeDisplay2">100</span></div>
+<div>生活成本: <span id="costDisplay2">80</span></div>
+<div>可支配收入: <span id="disposableIncome">20</span></div>
+<div>状态: <span id="incomeStatus">正常</span></div>
+</div>
+</div>
+<div class="panel"><h2>🎭 大游行/社会运动</h2>
+<div style="font-size:.78rem;">
+<div>游行状态: <span id="protestStatus">无</span></div>
+<div>民怨指数: <span id="grievanceIndex">0</span></div>
+</div>
+<div class="btn-group" style="margin-top:8px;">
+<button onclick="emergencyIntervention()">🚨 紧急干预<br><span style="font-size:.62rem;color:var(--text2);">10000💰+1000木</span></button>
+</div>
+</div>
+</div>
+
+<!-- 记忆 -->
+<div id="tab-memory" class="tab-content">
+<div class="panel"><h2>📜 国家记忆</h2>
+<div class="memory-timeline" id="memoryTimeline">尚无记忆</div>
+<div style="font-size:.6rem;color:var(--text2);margin-top:6px;">正面记忆每180日触发国民信心(+3幸福)，负面触发国民质疑(-3幸福)。负面记忆可消耗2000💰+100木回应。</div>
+</div>
+</div>
+
+<!-- 商店 -->
+<div id="tab-shop" class="tab-content">
+<div class="panel"><h2>🏪 道具商店</h2>
+<div style="font-size:.58rem;color:var(--text2);margin-bottom:6px;">⚠️ 本项目不提供充值入口，所售商品使用游戏虚拟货币，无盈利性质。</div>
+<div class="shop-grid" id="shopGrid"></div>
+</div>
+</div>
+
+<!-- 兑换码 -->
+<div id="tab-redeem" class="tab-content">
+<div class="panel"><h2>🎁 兑换码</h2>
+<div class="redeem-area">
+<input type="text" id="redeemInput" placeholder="请输入兑换码">
+<button onclick="doRedeem()" style="background:var(--btn);border:none;color:var(--text);padding:6px 18px;border-radius:14px;cursor:pointer;font-size:.72rem;">兑换</button>
+</div>
+<div style="font-size:.6rem;color:var(--text2);margin-top:6px;">💡 兑换码通过官方活动、公告或社交媒体发布。</div>
+</div>
+</div>
+
+<!-- 成就 -->
+<div id="tab-achievements" class="tab-content">
+<div class="panel"><h2>🏆 成就 (<span id="achCount">0</span>)</h2>
+<div id="achievementList" class="ach-container"></div>
+<div id="developerConfession"></div>
+</div>
+</div>
+
+<!-- 设置 -->
+<div id="tab-settings" class="tab-content">
+<div class="panel"><h2>⚙️ 设置</h2>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:.78rem;">
+<div><label>主题</label><button onclick="toggleTheme()" style="background:var(--btn);border:none;color:var(--text);padding:4px 14px;border-radius:12px;cursor:pointer;margin-left:6px;">切换</button></div>
+<div><label>速度</label><button id="speedBtn" onclick="toggleSpeed()" style="background:var(--btn);border:none;color:var(--text);padding:4px 14px;border-radius:12px;cursor:pointer;margin-left:6px;">1x</button></div>
+<div><label>存档</label><button onclick="exportSave()" style="background:var(--btn);border:none;color:var(--text);padding:4px 14px;border-radius:12px;cursor:pointer;margin-left:6px;">导出</button><button onclick="document.getElementById('fileInput').click()" style="background:var(--btn);border:none;color:var(--text);padding:4px 14px;border-radius:12px;cursor:pointer;">导入</button></div>
+<div><label>国名</label><span id="countryNameDisplay" style="margin-left:6px;color:var(--text2);">未命名</span><button onclick="changeCountryName()" style="background:var(--btn);border:none;color:var(--text);padding:4px 10px;border-radius:12px;cursor:pointer;font-size:.65rem;">修改</button></div>
+<div><label>自动存档</label><button id="autoSaveBtn" onclick="toggleAutoSave()" style="background:var(--btn);border:none;color:var(--text);padding:4px 10px;border-radius:12px;cursor:pointer;font-size:.65rem;">关</button></div>
+<div><label>自动决策</label><button id="autoDecideBtn" onclick="toggleAutoDecide()" style="background:var(--btn);border:none;color:var(--text);padding:4px 10px;border-radius:12px;cursor:pointer;font-size:.65rem;">关</button></div>
+<div><label>自动合成</label><button id="autoSynthBtn" onclick="toggleAutoSynthesize()" style="background:var(--btn);border:none;color:var(--text);padding:4px 10px;border-radius:12px;cursor:pointer;font-size:.65rem;">关</button></div>
+</div>
+<div style="margin-top:10px;border-top:1px solid var(--border);padding-top:8px;font-size:.62rem;color:var(--text2);">
+<div>存档状态: <span id="saveStatus">✅ 正常</span></div>
+<div>当前时间: <span id="settingsDate">元年 1月1日</span></div>
+<div>版本: 1.7.1</div>
+</div>
+</div>
+</div>
+
+<div class="footer">⚡ 1秒=1天 · 成就表国家发展模拟器 v1.7.1</div>
+</div>
+
+<div id="tutorialOverlay">
+<div id="tutorialBox">
+<h2 id="tutorialTitle">👋 欢迎！</h2>
+<p id="tutorialText">嗨，欢迎来到这个游戏^^ 现在我——ikjy，将引导你去完成游戏的第一步。</p>
+<button id="tutorialBtn">下一步</button>
+<div class="step-indicator" id="tutorialStep">步骤 1/7</div>
+</div>
+</div>
+
+<script>
+// 全局错误捕获
+window.onerror=function(msg,url,line){var e=document.getElementById('errorDisplay');if(!e){e=document.createElement('div');e.id='errorDisplay';e.style.cssText='position:fixed;bottom:0;left:0;right:0;background:#5a2e2e;color:#fff;padding:8px;font-size:11px;z-index:999999;max-height:30vh;overflow-y:auto;';document.body.appendChild(e)}e.innerHTML+='<div>❌ '+msg+' (line '+line+')</div>';return false};
+
+// Toast 浮层提示
+function toast(msg, isError) {
+    var t = document.getElementById('toastBox');
+    if (!t) {
+        t = document.createElement('div');
+        t.id = 'toastBox';
+        t.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:999999;display:flex;flex-direction:column;gap:6px;align-items:center;pointer-events:none;';
+        document.body.appendChild(t);
+    }
+    var d = document.createElement('div');
+    d.style.cssText = 'background:' + (isError ? '#5a2e2e' : '#1a5a3a') + ';color:#fff;padding:10px 22px;border-radius:22px;font-size:13px;box-shadow:0 4px 16px rgba(0,0,0,0.5);opacity:0;transition:opacity .2s;white-space:nowrap;';
+    d.innerText = msg;
+    t.appendChild(d);
+    requestAnimationFrame(function(){ d.style.opacity = '1'; });
+    setTimeout(function(){
+        d.style.opacity = '0';
+        setTimeout(function(){ if(d.parentNode) d.parentNode.removeChild(d); }, 300);
+    }, 2000);
+}
+
+// 核心状态
+let state={
+countryName:'未命名',date:{year:0,month:1,day:1,dayCount:0},paused:false,speed:1,
+wood:6,ore:0,steel:0,food:200,money:0,farmland:0,
+houses:[0,0,0],lumberLevel:1,mineLevel:0,
+population:100,labor:50,army:0,
+roadKm:0,roadDurability:0,
+tech:0,happiness:100,health:100,
+hospitals:0,freeMedical:false,medicalFee:0,
+taxRate:0.10,crimeRate:0,
+crimeEvent:{active:false,daysLeft:0,cooldown:0},
+hiddenCrime:{active:false,daysLeft:0,cooldown:0},
+diplomacy:{allies:0,warCount:0,peaceCount:0},
+pandemic:{active:false,daysLeft:0,index:0},
+weather:{name:'晴',type:'normal',effect:'good',duration:1},
+kuangyi:{cooldown:0,count:0,successCount:0,integrity:100},
+famineLevel:0,
+protection:{noCrime:true,noDisaster:true,slowHappiness:true,noPandemic:true,noWar:true},
+logMode:'simple',
+intlReputation:50,
+mood:'平稳',moodValue:0,moodLastRefresh:0,
+memories:[],memoryCounter:0,
+cities:[{id:0,name:'首都',population:100,houses:0,farmland:0,roadKm:0,crimeRate:0,happiness:100,level:5,isCapital:true}],
+nextCityId:1,diploStances:[],warningCenters:0,schools:0,educationInvestment:0,populationQuality:0,
+autoSynthesizeEnabled:false,
+earthquake:{active:false,centerMag:0,daysLeft:0,dayCount:0},
+disasterWarning:null,cityRiots:[],
+autoSaveEnabled:false,autoSaveInterval:60,autoDecideEnabled:false,lastAutoSaveDay:0,
+darkToken:0,darkImported:[],darkGoods:{},
+income:100,livingCost:80,
+protest:{active:false,daysLeft:0,size:0,grievance:0},
+psychCenters:0,communityNets:0,specialtyHospitals:0,occupationalCenters:0,
+flag:{
+hasLumber:true,hasMine:false,firstBlood:false,firstWar:false,
+firstTyphoon:false,firstFoodShort:false,firstArmy:false,firstHouse:false,
+firstRain:false,firstSnow:false,firstWind:false,firstCold:false,
+firstBlizzard:false,firstThunder:false,firstEarthquake:false,
+firstHeat:false,firstDrought:false,firstFlood:false,firstPandemic:false,
+firstHospital:false,firstAC:false,firstCrime:false,firstDiplomacy:false,
+noDiplomacy:true,noOperation:true,exportCount:0,importCount:0,
+heatWaveNoAC:false,redAlertNoAC:false,totalHousesBuilt:0,
+totalDiplomacy:0,heatWaveDays:0,floodCount:0,
+earthquakeCount:0,tsunamiCount:0,lastActionTime:0,actionCount:0,
+治安护盾:0,灾害护盾:0,清洁护盾:0,幸福护盾:0,医疗护盾:0,
+tutorialDone:false,tutorialStep:0,
+lastRainDay:-999,lastDisasterDay:-999,lastNonSunnyDay:-999,
+lastSnowDay:-999,lastTornadoDay:-999,lastEarthquakeDay:-999,
+disasterCountThisYear:0,disasterCountTarget:1,
+firstQuake8:false,firstDarkToken:false,
+},
+history:[],confessions:[],achievements:[],redeemedCodes:[],
+priceWood:6,priceOre:8,priceSteel:16,priceFood:5,
+};
+
+// 成就描述
+const ACH_DESC={
+'【第一话】':'初次进入存档。','【好……饿……啊……】':'粮食总量为0及以下。','【反击！反击！】':'赢下一场反击战。','【我国药丸！】':'反击战失败。','【好孤独…好寂寞…】':'人房比≤10%。','【风在吼，马在叫……】':'赢下五场反击战。','【神级指挥！】':'赢下十场反击战。','【伐伐伐伐伐木工】':'建立第一个伐木场。','【惹我光头强，揍你没商量】':'伐木场满级。','【大森林伐木公司】':'拥有十个伐木场。','【这是一条神奇的天路哎——】':'交通≥50km。','【You are mine.】':'建立第一个采矿场。','【Mine!All Mine!】':'采矿场满级。','【家里有矿】':'拥有三个采矿场。','【获得升级】':'获得第一个钢筋。','【要致富，先修路！】':'修路1km。','【想成功，先发疯】':'四项数值达10000。','【乌托邦】':'幸福度100(非开局)。','【反乌托邦】':'幸福度<20。','【我们的征途是星辰大海】':'拥有第一支军队。','【横扫世界！】':'连续30场胜利。','【开家酒店！】':'第一所住宅。','【基建狂魔】':'100栋房屋。','【豆橛子和线面的组合技】':'人口≥100000。','【啊哦，重开吧】':'人口归零。','【爱来不来！】':'断交1次。','【幸会幸会】':'建交1次。','【朋友满天下】':'建交≥30。','【孤岛奇兵】':'无建交。','【First blood】':'人口首次减少。','【下雨啦！收衫啦！】':'首次降雨。','【雪！是雪！】':'首次降雪。','【刮风咯——】':'首次刮风。','【好冷啊——】':'首次寒潮。','【要被吹走了——】':'首次暴风雪。','【打雷了！】':'首次雷阵雨。','【啊啊啊啊——放我下来——】':'首次台风。','【面朝黄土背朝天】':'开垦耕地。','【最可爱的人】':'战胜疫情。','【疫情公司】':'首次疫情。','【哦不！口罩事件！】':'疫情>1年。','【全员阵亡……】':'疫情灭国。','【匡义！】':'发动匡义。','【大捷！】':'匡义成功。','【消耗战】':'匡义>10年。','【免费医疗，普惠大众！】':'开启免费医疗。','【报废了！！】':'交通耐久归零。','【大地在移动！】':'首次地震。','【蝉在鸣叫】':'首次高温。','【龟裂】':'首次干旱。','【决堤】':'首次洪水。','【防线全面崩溃】':'3次洪水。','【高温黄色预警】':'高温≥15日。','【高温橙色预警】':'高温≥25日。','【高温红色预警】':'高温≥30日。','【广积粮】':'粮食首次减产。','【是空调！我加了点空调！】':'购买空调。','【Catch catch】':'抓捕嫌犯。','【经济！搞经济！】':'经济≥30000。','【百村联盟】':'人口≥100。','【千人之城】':'人口≥1000。','【万人之上】':'人口≥10000。','【十万百姓】':'人口≥100000。','【百万雄师过大江】':'人口≥1000000。','【千万人口】':'人口≥10000000。','【亿人之上】':'人口≥100000000。','【第一桶金】':'经济≥1000。','【万元户】':'经济≥10000。','【富可敌国】':'经济≥10000000。','【富可敌球】':'经济≥100000000。','【新兵小子】':'军队≥1。','【百夫长】':'军队≥100。','【千军万马】':'军队≥1000。','【十万大军】':'军队≥100000。','【百万雄师】':'军队≥1000000。','【钢铁洪流·终极】':'军队≥10000000。','【燧人氏】':'科技≥10。','【四大发明】':'科技≥50。','【工业革命】':'科技≥100。','【信息时代】':'科技≥500。','【星辰大海】':'科技≥1000。','【星际迷航】':'科技≥10000。','【良田千顷】':'耕地≥10000。','【万亩良田】':'耕地≥1000000。','【粮满仓】':'粮食≥100000。','【陈粮万石】':'粮食≥10000000。','【神农在世】':'耕地≥100000000。','【广厦千万间】':'房屋≥500。','【十全十美】':'10项≥10000。','【六边形战士】':'6项≥10000。','【千秋万代】':'游戏≥36500天。','【万岁万岁万万岁】':'游戏≥365000天。','【与天斗其乐无穷】':'游戏≥100天。','【十年之约】':'游戏≥3650天。','【百年国祚】':'游戏≥36500天。','【恭喜你！出新手村了！】':'游戏>3年。','【蛋白质是牛肉的四五倍】':'触发饥荒II。','【这是一个艰难的时代】':'触发饥荒I。','【Check in】':'导入存档。','【Check out】':'导出存档。','【编者还欠费功夫】':'终极成就。','【我很欣慰】':'终极后导出。','【“新世界的大门”】':'第一次获得暗得代币。','【贸易逆差】':'第一次通过暗得渠道购买商品。','【奉旨销烟】':'第一次销毁从暗得渠道购买的商品。','【烟馆遍地】':'第一次获得【成瘾】机制。','【刀尖上的舞者】':'动用专门警力进行禁绝。','【突发新闻】':'遇到里氏震级八级的地震。','【同志们！】':'达成【突发新闻】后积极组织救灾。','【收到请返航！】':'消耗巨大代价打赢一场反击空战。','【我有两个梦想】':'连续饥荒后粮食产量突破28631万。','【建国大业】':'科技水平突破1966。','【This is OUR game!】':'输入兑换码"官方话题登榜第一"。','【Rare Made】':'输入兑换码"Ikjy制造"。',
+};
+
+// 商店商品
+const SHOP_ITEMS=[
+{id:'shield_security',name:'治安护盾',price:76500,desc:'30日·不发生隐蔽治安事件'},
+{id:'shield_disaster',name:'灾害护盾',price:58600,desc:'30日·灾害3日无伤亡，损失-55%'},
+{id:'shield_clean',name:'清洁护盾',price:98860,desc:'30日·廉洁度低于90%时设为100%'},
+{id:'shield_happy',name:'幸福护盾',price:52860,desc:'30日·幸福度低于80时强制回100'},
+{id:'shield_medical',name:'医疗护盾',price:82000,desc:'30日·免费医疗创收或35%人口免疫'},
+{id:'repair_wood',name:'木房屋修缮',price:6000,desc:'剩余寿命<3年时恢复至设计寿命'},
+{id:'repair_stone',name:'牢固房屋修缮',price:9500,desc:'剩余寿命<3年时恢复至设计寿命'},
+{id:'repair_strong',name:'坚固房屋修缮',price:16000,desc:'剩余寿命<3年时恢复至设计寿命'},
+{id:'boat',name:'救灾皮划艇',price:75000,desc:'人员损失-60%，田地损失-15%'},
+{id:'repair_pack',name:'房屋修缮建材包',price:96000,desc:'3份·寿命<2年时+1年'},
+{id:'greenhouse',name:'钢化玻璃大棚',price:388000,desc:'保护20㎡耕地，灾害坚持5-20日'},
+{id:'buy_money_wood',name:'换钱(木)',price:50,desc:'50木材→100货币',isTrade:true},
+{id:'buy_money_ore',name:'换钱(矿)',price:25,desc:'25矿石→150货币',isTrade:true},
+{id:'buy_money_steel',name:'换钱(钢)',price:30,desc:'30钢筋→180货币',isTrade:true},
+];
+
+// 特殊商品（替换名称）
+const DARK_GOODS={
+'眠界':{name:'眠界',desc:'特殊进口商品',depThreshold:0.05,antiThreshold:0.15,antiLabor:0.30,antiHealth:2,antiArmy:0.20,banCost:10000,banSteel:2000,warThreshold:0.20},
+'「浊酒三二两」':{name:'「浊酒三二两」',desc:'特殊进口商品',depThreshold:0.03,antiThreshold:0.12,antiLabor:0.35,antiHealth:2.5,antiArmy:0.25,banCost:12000,banSteel:2500,warThreshold:0.18},
+'欲俗':{name:'欲俗',desc:'特殊进口商品',depThreshold:0.02,antiThreshold:0.10,antiLabor:0.40,antiHealth:3,antiArmy:0.30,banCost:15000,banSteel:3000,warThreshold:0.15},
+'虚妄薄案':{name:'虚妄薄案',desc:'特殊进口商品',depThreshold:0.04,antiThreshold:0.14,antiLabor:0.30,antiHealth:2,antiArmy:0.20,banCost:10000,banSteel:2000,warThreshold:0.20},
+'离断':{name:'离断',desc:'特殊进口商品',depThreshold:0.015,antiThreshold:0.08,antiLabor:0.45,antiHealth:4,antiArmy:0.35,banCost:20000,banSteel:4000,warThreshold:0.12},
+'绵面':{name:'绵面',desc:'特殊进口商品',depThreshold:0.01,antiThreshold:0.06,antiLabor:0.50,antiHealth:5,antiArmy:0.40,banCost:25000,banSteel:5000,warThreshold:0.10},
+};
+
+// 辅助
+function rand(min,max){return Math.floor(Math.random()*(max-min+1))+min}
+function pick(arr){return arr[rand(0,arr.length-1)]}
+function clamp(v,min,max){return Math.max(min,Math.min(max,v))}
+let logMode='simple';
+function setLogMode(mode){logMode=mode;document.getElementById('logSimple').classList.toggle('active',mode==='simple');document.getElementById('logDetail').classList.toggle('active',mode==='detail');state.logMode=mode}
+function addEvent(msg,highlight,type){let log=document.getElementById('eventLog');if(!log)return;let div=document.createElement('div');div.innerHTML=msg;if(highlight)div.classList.add('highlight');if(type==='detail')div.classList.add('detail');if(type==='warning')div.classList.add('warning');if(type==='danger')div.classList.add('danger');if(type==='detail'&&logMode==='simple')div.style.display='none';log.prepend(div);if(log.children.length>80)log.removeChild(log.lastChild)}
+function addDetailEvent(msg){addEvent('📋 '+msg,false,'detail')}
+function addWarningEvent(msg){addEvent('⚠️ '+msg,true,'warning')}
+function addDangerEvent(msg){addEvent('💀 '+msg,true,'danger')}
+function unlockAchievement(name){if(!state.achievements.includes(name)){state.achievements.push(name);addEvent('🏆 解锁: '+name,true);toast('🏆 '+name);if(name==='【与天斗其乐无穷】')state.confessions.push('📜 开发者坦白(一): 你好。能看到这段文字，就说明你玩这个游戏玩得很好——吧？这段文字原定的触发条件是达成成就【消耗战】，但确实太难了，对吧？鉴于你如此热爱这个游戏，我就跟你坦（bao）白（liao）一件事，后续会有更多——我经常在写C++时用unsigned long long定义变量。——关注Ikjy。');if(name==='【神级指挥】')state.confessions.push('📜 开发者坦白(二): 尔女子。这个相比于坦白(一)更好拿，对吧？（上面这些应该能看得见吧？不是乱码吧？UTF-8的诶，实在不行你强制一下Unicode？）既然如此，我再说个事（先叠甲，我尊重一个中国原则，遵循党的领导）——我在脑子里有一套成型的军队、政党。——关注Ikjy。');if(name==='【好孤独…好寂寞…】')state.confessions.push('📜 开发者坦白(三): 你坏。呃不是说你，只是看到了你拿到了一个【好孤独…好寂寞…】成就提醒一下你——该拆点房子了！人太少房太多了，听过25号宇宙实验吧？[特别提醒，如果生活中遇到不顺心的事，挺不过去，拨打12356。]——关注Ikjy。');if(name==='【豆橛子和线面的组合技】')state.confessions.push('📜 开发者坦白(四): イ尔土不。看到这个成就（【豆橛子和线面的组合技】）福建的小伙伴可别打我——俺是山东滴。——灌注Ikjy[doge]。');if(name==='【This is OUR game!】')state.confessions.push('📜 开发者坦白(五): 你好啊^^ 恭喜你，解锁了第一个兑换码。如果你很疑惑为什么会有这个兑换码——那当然是因为我们的官方话题 #成就表国家发展模拟器 在AcWing热榜登顶榜一了！！！（温馨提示：下一个兑换码是"Ikjy制造"）');updateUI()}}
+
+// 天气
+function isRainy(n){return ['小雨','中雨','大雨','雷阵雨'].includes(n)}
+function isSnow(n){return ['小雪','中雪','大雪','暴风雪'].includes(n)}
+function isDisaster(n){return ['冰雹','雷阵雨','暴风雪','寒潮','洪水','干旱','龙卷风','热带风暴','台风','海啸','高温','地震'].includes(n)}
+function generateWeather(){
+const month=state.date.month,day=state.date.day;
+const isWinter=(month>=11||month<=2),isSpring=(month>=3&&month<=5),isSummer=(month>=6&&month<=8),isAutumn=(month>=9&&month<=10),isLateSpring=(isSpring&&month>=3&&day>=15);
+const dR=state.date.dayCount-state.flag.lastRainDay;
+if(dR<7&&(isRainy(state.weather.name)||isSnow(state.weather.name)))return genNoRainSnow();
+const dD=state.date.dayCount-state.flag.lastDisasterDay;
+if(dD<12&&isDisaster(state.weather.name))return genNoDisaster();
+const dN=state.date.dayCount-state.flag.lastNonSunnyDay;
+if(dN<5&&state.weather.name!=='晴')return{name:'晴',type:'normal',effect:'good',duration:rand(1,3)};
+const dT=state.date.dayCount-state.flag.lastTornadoDay;
+if(dT<45&&state.weather.name==='龙卷风')return genNoTornado();
+if((isSpring||isWinter)&&['台风','热带风暴'].includes(state.weather.name))return genNoTyphoon();
+if((isSpring||isSummer||isAutumn)&&state.weather.name==='暴风雪')return genNoBlizzard();
+if((isSummer||isAutumn||isLateSpring)&&isSnow(state.weather.name))return genNoSnow();
+if(!isWinter&&isSnow(state.weather.name)){const d=state.date.dayCount-state.flag.lastSnowDay;if(d<15||state.weather.duration>1)return genNoSnow()}
+if(isSpring&&!isWinter&&isSnow(state.weather.name)&&Math.random()>0.0005)return genNoSnow();
+let r=Math.random()*100;
+if(r<60)return{name:'晴',type:'normal',effect:'good',duration:rand(2,4)};
+if(r<75){if(isWinter&&Math.random()<0.6){let s=['小雪','中雪','大雪'];if(Math.random()<0.3)s.push('暴风雪');return{name:pick(s),type:'storm',effect:'bad',duration:isWinter?rand(1,3):1}}else{let ra=['小雨','中雨'];if(isSummer)ra.push('大雨','雷阵雨');return{name:pick(ra),type:'normal',effect:'good',duration:rand(1,2)}}}
+let pool=[];if(isWinter)pool=['寒潮','冰雹','大雪'];else if(isSummer)pool=['雷阵雨','大雨','冰雹','高温'];else pool=['中雨','大雨','雷阵雨','冰雹','大风'];
+if(Math.random()<0.02)pool.push('地震');if(Math.random()<0.015)pool.push('海啸');
+let name=pick(pool),effect='bad',duration=rand(1,3);
+if(name==='高温')duration=rand(7,15);if(name==='台风')duration=rand(20,30);if(name==='地震')duration=rand(15,20);if(name==='海啸')duration=rand(3,7);
+if(isRainy(name)||isSnow(name))state.flag.lastRainDay=state.date.dayCount;
+if(isDisaster(name))state.flag.lastDisasterDay=state.date.dayCount;
+if(name!=='晴')state.flag.lastNonSunnyDay=state.date.dayCount;
+if(isSnow(name))state.flag.lastSnowDay=state.date.dayCount;
+if(name==='龙卷风')state.flag.lastTornadoDay=state.date.dayCount;
+return{name,type:'storm',effect,duration};
+}
+function genNoRainSnow(){return{name:pick(['晴','阴','多云','大风','中风','小风']),type:'normal',effect:'normal',duration:rand(1,2)}}
+function genNoDisaster(){let o=['晴','阴','多云','小雨','中雨','小风','中风'];if(Math.random()<0.3)o.push('小雪','中雪');return{name:pick(o),type:'normal',effect:'normal',duration:rand(1,2)}}
+function genNoTornado(){return{name:pick(['晴','阴','多云','小雨','中雨','大风','寒潮','冰雹']),type:'normal',effect:'normal',duration:rand(1,2)}}
+function genNoTyphoon(){return{name:pick(['晴','阴','多云','小雨','中雨','大风','寒潮','冰雹','雷阵雨']),type:'normal',effect:'normal',duration:rand(1,2)}}
+function genNoBlizzard(){return{name:pick(['晴','阴','多云','小雨','中雨','小雪','中雪','大风','寒潮','冰雹']),type:'normal',effect:'normal',duration:rand(1,2)}}
+function genNoSnow(){return{name:pick(['晴','阴','多云','小雨','中雨','大风','寒潮','冰雹','雷阵雨']),type:'normal',effect:'normal',duration:rand(1,2)}}
+function updateWeather(){const w=generateWeather();state.weather=w;document.getElementById('weatherDisplay').innerHTML=w.name+(w.effect==='bad'?' ⚠️':'');if(w.name==='台风'&&!state.flag.firstTyphoon){state.flag.firstTyphoon=true;unlockAchievement('【啊啊啊啊——放我下来——】')}if(w.name==='地震'&&!state.flag.firstEarthquake){state.flag.firstEarthquake=true;unlockAchievement('【大地在移动！】')}if(w.name==='高温'&&!state.flag.firstHeat){state.flag.firstHeat=true;unlockAchievement('【蝉在鸣叫】')}if(w.name==='干旱'&&!state.flag.firstDrought){state.flag.firstDrought=true;unlockAchievement('【龟裂】')}if(w.name==='洪水'&&!state.flag.firstFlood){state.flag.firstFlood=true;unlockAchievement('【决堤】')}if(isRainy(w.name)&&!state.flag.firstRain){state.flag.firstRain=true;unlockAchievement('【下雨啦！收衫啦！】')}if(isSnow(w.name)&&!state.flag.firstSnow){state.flag.firstSnow=true;unlockAchievement('【雪！是雪！】')}if(w.name==='大风'&&!state.flag.firstWind){state.flag.firstWind=true;unlockAchievement('【刮风咯——】')}if(w.name==='寒潮'&&!state.flag.firstCold){state.flag.firstCold=true;unlockAchievement('【好冷啊——】')}if(w.name==='暴风雪'&&!state.flag.firstBlizzard){state.flag.firstBlizzard=true;unlockAchievement('【要被吹走了——】')}if((w.name==='雷阵雨'||w.name==='雷电')&&!state.flag.firstThunder){state.flag.firstThunder=true;unlockAchievement('【打雷了！】')}if(w.name==='海啸'&&state.flag.tsunamiCount===0){state.flag.tsunamiCount++;unlockAchievement('【海啸来了！】')}if(w.name==='海啸'&&state.flag.tsunamiCount===1){state.flag.tsunamiCount++;unlockAchievement('【海啸又来了！】')}if(w.effect==='bad')applyDisaster(w);}
+function triggerEarthquake(){const m=4+Math.random()*5;if(m>=8&&!state.flag.firstQuake8){state.flag.firstQuake8=true;unlockAchievement('【突发新闻】')}state.earthquake={active:true,centerMag:m,daysLeft:Math.max(15,Math.floor(15+(m-4)*5)),dayCount:0};addDangerEvent('🌋 地震！震中'+m.toFixed(1)+'级');}
+function applyDisaster(w){if(state.protection.noDisaster&&state.date.dayCount<180){addDetailEvent('🛡️ 开局保护：灾害被阻挡');return}if(state.flag.灾害护盾>0){state.flag.灾害护盾--;addEvent('🛡️ 灾害护盾生效',true);return}let q=w.name==='地震',dm=1;if(q){if(state.earthquake.active){state.earthquake.dayCount++;if(state.earthquake.dayCount>3)dm=0.3;dm*=(1+(state.earthquake.centerMag-4)*0.5)}else{triggerEarthquake();dm=0.3}}let pl=0,fl=0,hd=0,fa=0;const s=Math.random();let red=Math.min(0.5,state.roadKm/1000*0.1);if(['台风','龙卷风','热带风暴'].includes(w.name)){pl=Math.floor(state.population*(0.02+s*0.08)*(1-red)*dm);fl=Math.floor(state.food*(0.05+s*0.15)*(1-red)*dm);hd=Math.floor((state.houses[0]+state.houses[1]+state.houses[2])*0.1*(1-red)*dm);fa=Math.floor(state.farmland*0.05*dm)}else if(['暴风雪','寒潮'].includes(w.name)){pl=Math.floor(state.population*(0.01+s*0.06)*(1-red)*dm);fl=Math.floor(state.food*(0.10+s*0.20)*(1-red)*dm);fa=Math.floor(state.farmland*0.03*dm)}else if(['洪水','海啸'].includes(w.name)){pl=Math.floor(state.population*(0.03+s*0.10)*(1-red)*dm);fl=Math.floor(state.food*0.20*(1-red)*dm);hd=Math.floor((state.houses[0]+state.houses[1]+state.houses[2])*0.15*(1-red)*dm);fa=Math.floor(state.farmland*0.08*dm);state.flag.floodCount++;if(state.flag.floodCount>=3)unlockAchievement('【防线全面崩溃】')}else if(w.name==='干旱'){fl=Math.floor(state.food*(0.20+s*0.30)*(1-red)*dm);fa=Math.floor(state.farmland*0.05*dm)}else if(w.name==='冰雹'){fl=Math.floor(state.food*0.10*(1-red)*dm);pl=Math.floor(state.population*0.01*(1-red)*dm);fa=Math.floor(state.farmland*0.02*dm)}else if(w.name==='高温'){pl=Math.floor(state.population*0.02*(1-red)*dm);state.flag.heatWaveDays+=state.weather.duration;if(state.flag.heatWaveDays>=15)unlockAchievement('【高温黄色预警】');if(state.flag.heatWaveDays>=25)unlockAchievement('【高温橙色预警】');if(state.flag.heatWaveDays>=30)unlockAchievement('【高温红色预警】')}else if(w.name==='地震'){pl=Math.floor(state.population*(0.05+s*0.15)*(1-red)*dm);hd=Math.floor((state.houses[0]+state.houses[1]+state.houses[2])*0.20*(1-red)*dm);state.flag.earthquakeCount++;state.flag.lastEarthquakeDay=state.date.dayCount;if(state.flag.earthquakeCount>=3)unlockAchievement('【地震专业户】')}let mp=Math.floor(state.population*0.8);if(pl>mp)pl=mp;if(state.population-pl<1)pl=state.population-1;state.population-=pl;state.food=Math.max(0,state.food-fl);state.farmland=Math.max(0,state.farmland-fa);if(hd>0){let t=state.houses[0]+state.houses[1]+state.houses[2];if(t>0){let d=Math.min(hd,t);let wd=Math.min(state.houses[0],Math.floor(d*0.7));state.houses[0]-=wd;d-=wd;let sd=Math.min(state.houses[1],Math.floor(d*0.5));state.houses[1]-=sd;d-=sd;let gd=Math.min(state.houses[2],d);state.houses[2]-=gd;if(wd>0)addDetailEvent('🏚️ '+wd+'栋木房屋被摧毁');if(sd>0)addDetailEvent('🏚️ '+sd+'栋牢固房屋被摧毁');if(gd>0)addDetailEvent('🏚️ '+gd+'栋坚固房屋被摧毁')}}if(state.population<=0)unlockAchievement('【啊哦，重开吧】');if(state.food<=0)unlockAchievement('【好……饿……啊……】');addEvent('💥 '+w.name+' 损失: 人口-'+pl+', 粮食-'+fl+', 耕地-'+fa,true);toast('💥 '+w.name+' 损失: 人口-'+pl, true);updateUI();}
+function pandemicTick(){if(state.protection.noPandemic&&state.date.year<2)return;if(state.pandemic.active){state.pandemic.daysLeft--;let d=Math.max(0,rand(1,600)-state.tech*2);state.population=Math.max(1,state.population-d);if(state.population<=1)unlockAchievement('【全员阵亡……】');if(state.pandemic.daysLeft<=0){state.pandemic.active=false;unlockAchievement('【最可爱的人】');addEvent('🦠 疫情结束！',true);toast('🦠 疫情结束！')}return}if(state.date.month===1&&state.date.day===1&&state.date.year>=4){let idx=state.pandemic.index;if(Math.random()<0.0001+idx*0.001){let dur=Math.max(15,30+rand(0,60)-state.tech*5);state.pandemic.active=true;state.pandemic.daysLeft=dur;state.pandemic.index=0;if(!state.flag.firstPandemic){state.flag.firstPandemic=true;unlockAchievement('【疫情公司】')}addEvent('🦠 疫情爆发！持续'+dur+'天',true);toast('🦠 疫情爆发！持续'+dur+'天',true);if(dur>365)unlockAchievement('【哦不！口罩事件！】')}else{let bad=state.weather.effect==='bad'?1:0;if(bad>0&&bad<=15)state.pandemic.index+=0.5;else if(bad>15&&bad<=30)state.pandemic.index+=1;else if(bad>30)state.pandemic.index+=2;else state.pandemic.index+=1}}}
+function refreshMood(){const d=state.date.dayCount-state.moodLastRefresh;if(d<7)return;state.moodLastRefresh=state.date.dayCount;let sc=0;sc+=(state.happiness-50)*0.5;sc+=(state.health-50)*0.3;sc-=state.crimeRate*0.3;if(state.pandemic.active)sc-=20;if(state.weather.effect==='bad')sc-=5;if(state.famineLevel>0)sc-=15;sc+=state.intlReputation*0.1;if(state.memories.length>0){let p=state.memories.filter(m=>m.positive).length;let n=state.memories.filter(m=>!m.positive).length;sc+=(p-n)*3}if(sc>30)state.mood='振奋';else if(sc>10)state.mood='平稳';else if(sc>-10)state.mood='焦虑';else if(sc>-30)state.mood='恐慌';else if(sc>-50)state.mood='愤怒';else state.mood='麻木';state.moodValue=sc;addDetailEvent('😤 国民情绪刷新: '+state.mood);}
+function addMemory(desc,pos){state.memoryCounter++;state.memories.push({id:state.memoryCounter,desc,positive:pos,day:state.date.dayCount,responded:false});addDetailEvent('📜 国家记忆 #'+state.memoryCounter+': '+desc)}
+function memoryTick(){if(state.date.dayCount%180!==0)return;let p=state.memories.filter(m=>m.positive&&!m.responded);let n=state.memories.filter(m=>!m.positive&&!m.responded);if(p.length>0){let b=Math.min(9,p.length*3);state.happiness=Math.min(100,state.happiness+b);toast('📜 国民信心 +'+b+'幸福度')}if(n.length>0){let b=Math.min(9,n.length*3);state.happiness=Math.max(0,state.happiness-b);toast('📜 国民质疑 -'+b+'幸福度',true)}}
+function respondToMemory(id){let m=state.memories.find(x=>x.id===id);if(!m||m.positive||m.responded)return;if(state.money<2000||state.wood<100){addEvent('❌ 资源不足');toast('❌ 资源不足',true);return}state.money-=2000;state.wood-=100;m.responded=true;addEvent('📜 已公开回应记忆 #'+id);toast('📜 已回应记忆 #'+id);updateUI()}
+function foundCity(){if(state.cities.length>=5){addEvent('❌ 城市数量已达上限');toast('❌ 城市数量已达上限',true);return}if(state.money<10000||state.wood<1000||state.steel<500){addEvent('❌ 资源不足');toast('❌ 资源不足',true);return}state.money-=10000;state.wood-=1000;state.steel-=500;const c={id:state.nextCityId,name:'城市'+state.nextCityId,population:100,houses:0,farmland:0,roadKm:0,crimeRate:0,happiness:100,level:1,isCapital:false};state.nextCityId++;state.cities.push(c);addEvent('🏙️ 新城市建成: '+c.name);toast('🏙️ 新城市建成: '+c.name);updateUI()}
+function cityRiotTick(){state.cityRiots=state.cityRiots.filter(r=>{r.daysLeft--;if(r.daysLeft<=0)addEvent('🏙️ '+r.cityName+' 暴动平息');return r.daysLeft>0});state.cities.forEach(c=>{if(c.crimeRate>60&&!c.isCapital&&Math.random()<0.01&&!state.cityRiots.find(r=>r.cityId===c.id)){state.cityRiots.push({cityId:c.id,cityName:c.name,daysLeft:30});addWarningEvent('🏙️ '+c.name+' 爆发暴动！');toast('🏙️ '+c.name+' 爆发暴动！',true)}})}
+function initDiploStances(){if(state.diploStances.length===0&&state.diplomacy.allies>0){for(let i=0;i<state.diplomacy.allies;i++){state.diploStances.push({name:'国家'+(i+1),friendliness:50,stance:'中立'})}}}
+function warningTick(){if(state.warningCenters===0)return;if(state.weather.effect==='bad'&&Math.random()<state.warningCenters*0.10){state.disasterWarning={weather:state.weather.name,daysLeft:3};addEvent('📡 灾害预警: '+state.weather.name+' 将在3天后到来！',true);toast('📡 灾害预警: '+state.weather.name,true)}}
+function growPopulation(){if(state.population<=0)return;let ma=Math.floor(state.population*0.8);if(state.army>ma)state.army=ma;let fp=(state.farmland*5)+(state.lumberLevel*0.5);let ht=state.houses[0]*50+state.houses[1]*100+state.houses[2]*600;let g=Math.floor((fp*0.4)+(ht*0.32));if(g<0)g=0;if(state.date.year<3){state.population+=g}else{let h=Math.max(0,state.population-ht);if(h>0&&Math.random()<0.03){let l=Math.floor(h*0.03);state.population-=l}else state.population+=g;if(state.food<50&&state.farmland<30&&Math.random()<0.2){let l=Math.min(Math.floor(state.population*0.05),state.population-1);state.population-=l;state.famineLevel=2;if(!state.flag.firstFoodShort){state.flag.firstFoodShort=true;unlockAchievement('【蛋白质是牛肉的四五倍】')}addDangerEvent('饥荒II: 人口-'+l);toast('饥荒II: 人口-'+l,true)}else if(state.food<30&&state.farmland<15&&Math.random()<0.38){let l=Math.min(Math.floor(state.population*0.08),state.population-1);state.population-=l;state.famineLevel=1;unlockAchievement('【这是一个艰难的时代】');addDangerEvent('饥荒I: 人口-'+l);toast('饥荒I: 人口-'+l,true)}}if(state.population<1)state.population=1;let lr=0.5+(state.happiness/100)*0.25;if(state.mood==='振奋')lr*=1.1;else if(state.mood==='焦虑')lr*=0.95;else if(state.mood==='恐慌')lr*=0.85;else if(state.mood==='愤怒')lr*=0.9;else if(state.mood==='麻木')lr*=0.8;state.labor=Math.max(0,Math.floor(state.population*lr));if(state.army>0){state.food=Math.max(0,state.food-Math.floor(state.army*0.185))}if(state.population<1000){let d=state.protection.slowHappiness&&state.date.dayCount<500?0.02:0.1;state.happiness=Math.max(0,state.happiness-d)}let ht2=state.houses[0]*50+state.houses[1]*100+state.houses[2]*600;if(state.population>0&&ht2>0&&(state.population/ht2)<0.1){state.happiness=Math.max(0,state.happiness-0.1);unlockAchievement('【好孤独…好寂寞…】')}if(state.flag.幸福护盾>0&&state.happiness<80){state.happiness=100}state.happiness=Math.min(100,Math.max(0,state.happiness));if(state.population>=100)unlockAchievement('【百村联盟】');if(state.population>=1000)unlockAchievement('【千人之城】');if(state.population>=10000)unlockAchievement('【万人之上】');if(state.population>=100000)unlockAchievement('【十万百姓】');if(state.population>=1000000)unlockAchievement('【百万雄师过大江】');if(state.population>=10000000)unlockAchievement('【千万人口】');if(state.population>=100000000)unlockAchievement('【亿人之上】');if(state.army>=1)unlockAchievement('【新兵小子】');if(state.army>=100)unlockAchievement('【百夫长】');if(state.army>=1000)unlockAchievement('【千军万马】');if(state.army>=100000)unlockAchievement('【十万大军】');if(state.army>=1000000)unlockAchievement('【百万雄师】');if(state.army>=10000000)unlockAchievement('【钢铁洪流·终极】');updateUI();}
+function produceResources(){let lv=[0,3,15,180,260,450,750,2300,6800,15800,26800,48000,93000,107000,122000,1380000,1550000,1730000,19200000,21200000,23300000,25500000,27800000,30200000,32700000,353000000,380000000,408000000,437000000,467000000,4980000000];let wp=lv[Math.min(state.lumberLevel,30)]||3;let ml=[0,6,100,1600,8000,9200,12000,135000,152000,171000,192000,2150000,2400000,2670000,2960000,32700000,36000000,39500000,432000000,471000000,512000000,555000000,600000000,647000000,696000000,747000000,8000000000,8550000000,9120000000,97100000000,103200000000];let op=ml[Math.min(state.mineLevel,30)]||0;state.wood+=wp;state.ore+=op;let ff=state.farmland*5;if(state.weather.effect==='good')ff=Math.floor(ff*1.2);else if(state.weather.effect==='bad')ff=Math.floor(ff*0.5);state.food+=Math.max(0,ff);let mi=Math.floor(state.labor*0.5)+Math.floor(state.happiness*0.1)+Math.floor(state.food*0.01);mi=Math.floor(mi*state.taxRate);state.money+=Math.max(0,mi);if(state.lumberLevel>=1&&!state.flag.hasLumber){state.flag.hasLumber=true;state.tech+=1;unlockAchievement('【伐伐伐伐伐木工】')}if(state.mineLevel>=1&&!state.flag.hasMine){state.flag.hasMine=true;state.tech+=3;unlockAchievement('【You are mine.】')}if(state.wood>=10000&&state.ore>=10000&&state.steel>=10000&&state.roadKm>=10000)unlockAchievement('【想成功，先发疯】');if(state.money>=1000)unlockAchievement('【第一桶金】');if(state.money>=10000)unlockAchievement('【万元户】');if(state.money>=30000)unlockAchievement('【经济！搞经济！】');if(state.money>=10000000)unlockAchievement('【富可敌国】');if(state.money>=100000000)unlockAchievement('【富可敌球】');let vals=[state.population,state.money,state.tech,state.roadKm,state.army,state.happiness,state.wood,state.ore,state.steel,state.farmland];if(vals.filter(v=>v>=10000).length>=10)unlockAchievement('【十全十美】');if(state.population>=10000&&state.money>=10000&&state.tech>=10000&&state.roadKm>=10000&&state.army>=10000&&state.happiness>=10000)unlockAchievement('【六边形战士】');if(state.hospitals>0&&state.health<100){let r=state.hospitals*10+state.medicalFee/10+(state.freeMedical?15:0);state.health=Math.min(100,state.health+r/365)}else if(state.hospitals===0&&state.health>0)state.health=Math.max(0,state.health-0.05);state.health=clamp(state.health,0,100);state.crimeRate=Math.max(0,state.crimeRate-0.01);if(state.health<60)state.labor=Math.floor(state.labor*0.85);if(state.health<40)state.labor=Math.floor(state.labor*0.65);if(state.health<25)state.labor=Math.floor(state.labor*0.4);if(state.tech>=10)unlockAchievement('【燧人氏】');if(state.tech>=50)unlockAchievement('【四大发明】');if(state.tech>=100)unlockAchievement('【工业革命】');if(state.tech>=500)unlockAchievement('【信息时代】');if(state.tech>=1000)unlockAchievement('【星辰大海】');if(state.tech>=10000)unlockAchievement('【星际迷航】');if(state.tech>=2233)unlockAchievement('【2233】');if(state.tech>=1966)unlockAchievement('【建国大业】');if(state.farmland>=10000)unlockAchievement('【良田千顷】');if(state.farmland>=1000000)unlockAchievement('【万亩良田】');if(state.farmland>=100000000)unlockAchievement('【神农在世】');if(state.food>=100000)unlockAchievement('【粮满仓】');if(state.food>=10000000)unlockAchievement('【陈粮万石】');if(state.roadKm>=1)unlockAchievement('【要想富，先修路】');if(state.roadKm>=50)unlockAchievement('【这是一条神奇的天路哎——】');if(state.roadKm>=100)unlockAchievement('【条条大路通罗马】');if(state.roadKm>=40000)unlockAchievement('【世界第八大奇迹】');updateUI();}
+function updateIncomeCost(){let inc=100+Math.floor(state.labor/1000)+Math.floor(state.tech/100)*3+Math.floor(state.populationQuality/10)*2;state.income=inc;let c=80+Math.floor(state.food/10000)*0.3+state.taxRate*100*0.2+state.medicalFee/100;state.livingCost=Math.round(c);if(state.income<50){state.happiness=Math.max(0,state.happiness-2);state.crimeRate+=5;state.labor=Math.floor(state.labor*0.9)}else if(state.income>300){state.happiness=Math.min(100,state.happiness+1);state.crimeRate=Math.max(0,state.crimeRate-3)}if(state.livingCost>state.income){state.happiness=Math.max(0,state.happiness-3);state.crimeRate+=8;state.labor=Math.floor(state.labor*0.85)}}
+function protestTick(){if(state.protest.active){state.protest.daysLeft--;let s=state.protest.size;if(s===1){state.happiness=Math.max(0,state.happiness-1);state.crimeRate+=2;state.labor=Math.floor(state.labor*0.95);state.money=Math.floor(state.money*0.97)}else if(s===2){state.happiness=Math.max(0,state.happiness-2);state.crimeRate+=4;state.labor=Math.floor(state.labor*0.9);state.money=Math.floor(state.money*0.94)}else if(s===3){state.happiness=Math.max(0,state.happiness-3);state.crimeRate+=8;state.labor=Math.floor(state.labor*0.8);state.money=Math.floor(state.money*0.88)}if(state.protest.daysLeft<=0){state.protest.active=false;addEvent('🚶 游行结束');toast('🚶 游行结束')}}}
+function openDarkMarket(){showDarkWarning(function(){let html='<h3>暗得市场</h3>';for(let key in DARK_GOODS){let g=DARK_GOODS[key];html+='<div style="margin:6px 0;padding:6px;border-bottom:1px solid #333;"><b>'+g.name+'</b> - '+g.desc+'<br><button onclick="buyDarkGood(\''+key+'\')">进口(10代币)</button></div>'}html+='<button onclick="closeDialog()">关闭</button>';showDialog(html);});}
+function buyDarkGood(key){if(state.darkToken<10){addEvent('❌ 暗得代币不足');toast('❌ 暗得代币不足',true);return}state.darkToken-=10;if(!state.darkImported.includes(key)){state.darkImported.push(key);unlockAchievement('【贸易逆差】')}addEvent('📦 进口了 '+key);toast('📦 进口了 '+key);updateUI()}
+function exportForTokens(){if(state.food<100&&state.wood<50&&state.ore<50&&state.steel<20){addEvent('❌ 资源不足');toast('❌ 资源不足',true);return}let t=0;if(state.food>=100){state.food-=100;t+=5}if(state.wood>=50){state.wood-=50;t+=3}if(state.ore>=50){state.ore-=50;t+=3}if(state.steel>=20){state.steel-=20;t+=5}state.darkToken+=t;if(!state.flag.firstDarkToken){state.flag.firstDarkToken=true;unlockAchievement('【“新世界的大门”】')}addEvent('🪙 获得 '+t+' 暗得代币');toast('🪙 获得 '+t+' 暗得代币');updateUI()}
+function prohibitionAction(){if(state.prohibition&&state.prohibition.active){addEvent('⚠️ 禁绝已在进行中');toast('⚠️ 禁绝已在进行中',true);return}if(state.money<10000||state.steel<2000){addEvent('❌ 资源不足');toast('❌ 资源不足',true);return}state.money-=10000;state.steel-=2000;state.prohibition={active:true,daysLeft:30};unlockAchievement('【刀尖上的舞者】');addEvent('🚫 禁绝开始，持续30天');toast('🚫 禁绝开始，持续30天');updateUI()}
+function showDarkWarning(cb){let o=document.createElement('div');o.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);display:flex;justify-content:center;align-items:center;z-index:99999;flex-direction:column;gap:12px;color:#fff;padding:16px;text-align:center;font-size:12px;line-height:1.6;';o.innerHTML='<div style="max-width:600px;"><p style="font-size:12px;">本游戏及其开发者十分清楚毒品的危害，并坚决不碰毒品，坚决抵制制毒贩毒吸毒等违法犯罪行为。所有涉及毒品及其原理的内容仅用于虚拟游戏开发及警示作用，不对玩家进行诱导、暗示。坚决抵制毒品是社会的共同责任，是社会稳定运行的底线，不容践踏。玩家应当了解毒品的危害，并清楚本游戏中所有涉及毒品及其原理的内容均为虚构，且本游戏及其开发者不提供任何毒品、吸毒工具、制毒原料及工具等一切涉及毒品及其原理的物品和服务。玩家应当知晓毒品及相关活动的危害及违法犯罪性质，坚决遵守法律法规，对毒品零容忍。因为玩家自行决断导致涉及毒品及其原理、活动造成或未造成后果的，与本游戏及其开发者无关。本游戏及其开发者已尽到提醒义务，在法律范围内免除一切责任。</p><p style="color:#e8c860;" id="darkCountdown">3秒后方可点击确认</p><div style="display:flex;gap:10px;justify-content:center;"><button id="darkCancel" style="padding:6px 20px;border-radius:16px;border:none;background:#5a2e2e;color:#fff;cursor:pointer;">取消</button><button id="darkConfirm" style="padding:6px 20px;border-radius:16px;border:none;background:#1a5a3a;color:#fff;cursor:pointer;opacity:0.4;" disabled>确认</button></div></div>';document.body.appendChild(o);let c=3;let i=setInterval(()=>{c--;document.getElementById('darkCountdown').innerText=c+'秒后方可点击确认';if(c<=0){clearInterval(i);document.getElementById('darkCountdown').innerText='现在可以点击确认了';document.getElementById('darkConfirm').disabled=false;document.getElementById('darkConfirm').style.opacity='1'}},1000);document.getElementById('darkCancel').onclick=()=>{clearInterval(i);o.remove()};document.getElementById('darkConfirm').onclick=()=>{if(document.getElementById('darkConfirm').disabled)return;o.remove();cb()}}
+function showDialog(html){let o=document.createElement('div');o.id='dialogOverlay';o.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:flex;justify-content:center;align-items:center;z-index:99998;';o.innerHTML='<div style="background:#0d1c20;border:2px solid #1a3439;border-radius:14px;padding:20px 28px;max-width:600px;color:#dce8e8;font-size:13px;">'+html+'</div>';document.body.appendChild(o)}
+function closeDialog(){let d=document.getElementById('dialogOverlay');if(d)d.remove()}
+function tick(){if(state.paused)return;state.date.dayCount++;state.date.day++;if(state.date.day>30){state.date.day=1;state.date.month++}if(state.date.month>12){state.date.month=1;state.date.year++}if(state.date.month===1&&state.date.day===1){state.flag.disasterCountThisYear=0;let r=Math.random();if(r<0.25)state.flag.disasterCountTarget=1;else if(r<0.75)state.flag.disasterCountTarget=3;else state.flag.disasterCountTarget=5}updateWeather();growPopulation();produceResources();pandemicTick();refreshMood();memoryTick();cityRiotTick();warningTick();protestTick();updateIncomeCost();if(state.disasterWarning){state.disasterWarning.daysLeft--;if(state.disasterWarning.daysLeft<=0)state.disasterWarning=null}if(state.earthquake.active){state.earthquake.daysLeft--;if(state.earthquake.daysLeft<=0){state.earthquake.active=false;addEvent('🌋 地震结束')}}if(state.roadKm>0&&state.date.day%30===0){let c=Math.floor(state.roadKm),m=Math.floor(state.roadKm*10);if(state.steel>=c&&state.money>=m){state.steel-=c;state.money-=m;unlockAchievement('【按规交保险】')}else{state.roadDurability=Math.max(0,state.roadDurability-10);if(state.roadDurability===0)unlockAchievement('【报废了！！】')}}if(state.houses[1]>0&&state.date.month===1&&state.date.day===1){let n=state.houses[1]*50;if(state.steel>=n&&state.wood>=n&&state.money>=state.houses[1]*1600){state.steel-=n;state.wood-=n;state.money-=state.houses[1]*1600}else{let l=Math.min(state.houses[1],Math.floor(state.houses[1]*0.1)+1);state.houses[1]-=l;addWarningEvent('🏚️ '+l+'栋牢固房屋倒塌');toast('🏚️ '+l+'栋牢固房屋倒塌',true)}}if(state.houses[0]>0&&state.date.day%15===0){let n=state.houses[0]*15;if(state.steel>=n&&state.money>=state.houses[0]*360){state.steel-=n;state.money-=state.houses[0]*360}else{let l=Math.min(state.houses[0],Math.floor(state.houses[0]*0.05)+1);state.houses[0]-=l;addWarningEvent('🏚️ '+l+'栋木房屋倒塌');toast('🏚️ '+l+'栋木房屋倒塌',true)}}let poss=Math.floor(state.population*0.08),join=Math.floor(poss*0.30);let ma=Math.floor(state.population*0.8);if(join>0&&state.food>100&&state.army+join<=ma){state.army+=join;state.population-=join;addDetailEvent('⚔️ '+join+'人自动参军')}if(state.kuangyi.cooldown>0)state.kuangyi.cooldown--;if(!state.protection.noCrime||state.date.year>=1){if(state.crimeEvent.cooldown<=0&&Math.random()<0.10){state.crimeEvent.active=true;state.crimeEvent.daysLeft=rand(3,7);state.crimeEvent.cooldown=45;addEvent('🚔 治安事件！',true);toast('🚔 治安事件！',true);if(state.crimeRate>80)unlockAchievement('【Rock star】')}}if(state.crimeEvent.active){state.crimeEvent.daysLeft--;if(state.crimeEvent.daysLeft<=0)state.crimeEvent.active=false}if(state.crimeEvent.cooldown>0)state.crimeEvent.cooldown--;if(!state.protection.noCrime||state.date.year>=1){if(state.hiddenCrime.cooldown<=0&&Math.random()<0.12){state.hiddenCrime.active=true;state.hiddenCrime.daysLeft=rand(180,365);state.hiddenCrime.cooldown=3*365;addEvent('🕵️ 隐蔽治安事件潜伏中...',true);toast('🕵️ 隐蔽治安事件潜伏中',true)}}if(state.hiddenCrime.active){state.hiddenCrime.daysLeft--;if(state.hiddenCrime.daysLeft<=0){state.hiddenCrime.active=false;addEvent('🕵️ 隐蔽治安事件结束',true)}}if(state.hiddenCrime.cooldown>0)state.hiddenCrime.cooldown--;if(state.date.dayCount>=100)unlockAchievement('【与天斗其乐无穷】');if(state.date.dayCount>=3650)unlockAchievement('【十年之约】');if(state.date.dayCount>=36500){unlockAchievement('【百年国祚】');unlockAchievement('【千秋万代】')}if(state.date.dayCount>=365000)unlockAchievement('【万岁万岁万万岁】');if(state.date.year>=3)unlockAchievement('【恭喜你！出新手村了！】');if(state.flag.治安护盾>0)state.flag.治安护盾--;if(state.flag.灾害护盾>0)state.flag.灾害护盾--;if(state.flag.清洁护盾>0)state.flag.清洁护盾--;if(state.flag.幸福护盾>0)state.flag.幸福护盾--;if(state.flag.医疗护盾>0)state.flag.医疗护盾--;state.flag.lastActionTime++;if(state.flag.lastActionTime>365&&state.flag.noOperation){unlockAchievement('【你在找什么？登录按钮吗？】');state.flag.noOperation=false}if(state.autoSaveEnabled&&state.date.dayCount-state.lastAutoSaveDay>=state.autoSaveInterval){saveHistory();state.lastAutoSaveDay=state.date.dayCount}if(state.autoSynthesizeEnabled&&state.ore>=2){let c=Math.floor(state.ore/2);state.ore-=c*2;state.steel+=c;toast('⚙️ 自动合成 '+c+' 钢筋')}updateUI();}
+
+function updateUI(){try{
+document.getElementById('popTotal').innerText=state.population;
+document.getElementById('popLabor').innerText=state.labor;
+document.getElementById('popArmy').innerText=state.army;
+document.getElementById('houseStats').innerText=state.houses[0]+'/'+state.houses[1]+'/'+state.houses[2];
+document.getElementById('foodStats').innerText=Math.floor(state.food);
+document.getElementById('woodStats').innerText=state.wood;
+document.getElementById('oreStats').innerText=state.ore;
+document.getElementById('steelStats').innerText=state.steel;
+document.getElementById('moneyStats').innerText=state.money;
+document.getElementById('roadStats').innerText=state.roadKm;
+document.getElementById('happiness').innerText=Math.floor(state.happiness);
+document.getElementById('happinessBar').style.width=state.happiness+'%';
+document.getElementById('techLevel').innerText=state.tech;
+document.getElementById('farmland').innerText=state.farmland;
+document.getElementById('hospitalCount').innerText=state.hospitals;
+document.getElementById('health').innerText=Math.floor(state.health);
+document.getElementById('crimeRate').innerText=Math.floor(state.crimeRate)+'%';
+document.getElementById('intlRep').innerText=state.intlReputation;
+document.getElementById('intlRep2').innerText=state.intlReputation;
+document.getElementById('incomeDisplay').innerText=Math.round(state.income);
+document.getElementById('costDisplay').innerText=Math.round(state.livingCost);
+document.getElementById('darkToken').innerText=state.darkToken;
+document.getElementById('darkToken2').innerText=state.darkToken;
+document.getElementById('darkImported').innerText=state.darkImported.length;
+document.getElementById('lumberLevel').innerText=state.lumberLevel;
+document.getElementById('mineLevel').innerText=state.mineLevel;
+document.getElementById('dateDisplay').innerHTML=state.date.year+'年 '+state.date.month+'月'+state.date.day+'日';
+document.getElementById('settingsDate').innerHTML=state.date.year+'年 '+state.date.month+'月'+state.date.day+'日';
+document.getElementById('achCount').innerText=state.achievements.length;
+document.getElementById('freeMedicalDisplay').innerText=state.freeMedical?'开':'关';
+document.getElementById('countryNameDisplay').innerText=state.countryName||'未命名';
+document.getElementById('healthDisplay2').innerText=Math.floor(state.health);
+document.getElementById('incomeDisplay2').innerText=Math.round(state.income);
+document.getElementById('costDisplay2').innerText=Math.round(state.livingCost);
+document.getElementById('disposableIncome').innerText=Math.round(state.income-state.livingCost);
+document.getElementById('incomeStatus').innerText=state.livingCost>state.income?'入不敷出':'正常';
+document.getElementById('protestStatus').innerText=state.protest.active?'进行中':'无';
+document.getElementById('grievanceIndex').innerText=Math.round(state.protest.grievance||0);
+document.getElementById('psychCenterCount').innerText=state.psychCenters;
+document.getElementById('communityNetCount').innerText=state.communityNets;
+document.getElementById('specialtyHospital').innerText=state.specialtyHospitals;
+document.getElementById('occupationalCenter').innerText=state.occupationalCenters;
+document.getElementById('diplomacyInfo').innerHTML='建交:'+state.diplomacy.warCount+' | 断交:'+state.diplomacy.peaceCount;
+document.getElementById('diploAllies').innerText=state.diplomacy.warCount;
+document.getElementById('diploPeace').innerText=state.diplomacy.peaceCount;
+let p=Math.min(100,state.tech*0.6+state.army*0.55+state.roadKm*0.4+state.happiness*0.2);
+document.getElementById('diploPower').innerText=Math.floor(p);
+document.getElementById('famineInfo').innerText=state.famineLevel===1?'⚠️ 饥荒I':(state.famineLevel===2?'⚠️ 饥荒II':'');
+document.getElementById('pandemicInfo').innerText=state.pandemic.active?'🦠 疫情('+state.pandemic.daysLeft+'天)':'';
+let pt='';if(state.protection.noCrime&&state.date.year<1)pt+='🛡️治安 ';if(state.protection.noDisaster&&state.date.dayCount<180)pt+='🛡️灾害 ';if(state.protection.noPandemic&&state.date.year<2)pt+='🛡️疫情 ';if(state.protection.noWar&&state.date.year<1)pt+='🛡️战争 ';document.getElementById('protectionInfo').innerText=pt;
+let ah='';state.achievements.forEach(a=>{ah+='<div class="ach-item">'+a+'<span class="ach-desc">'+(ACH_DESC[a]||'')+'</span></div>'});document.getElementById('achievementList').innerHTML=ah||'尚无成就';
+let ch='';state.confessions.forEach(c=>{ch+='<div class="confession-item">'+c+'</div>'});document.getElementById('developerConfession').innerHTML=ch;
+let mh='';state.memories.forEach(m=>{mh+='<div class="memory-item '+(m.positive?'memory-positive':'memory-negative')+'">#'+m.id+' '+m.desc+' '+(m.positive?'':'<button onclick="respondToMemory('+m.id+')" style="font-size:.5rem;padding:2px 8px;border-radius:10px;background:var(--btn);border:none;color:var(--text);cursor:pointer;">回应</button>')+'</div>'});document.getElementById('memoryTimeline').innerHTML=mh||'尚无记忆';
+let ch2='';state.cities.forEach(c=>{ch2+='<div class="city-item">🏙️ '+c.name+(c.isCapital?' (首都)':'')+' | 人口:'+c.population+' | 等级:'+c.level+'</div>'});document.getElementById('cityList').innerHTML=ch2;
+let ds='';state.diploStances.forEach(s=>{ds+='<div>'+s.name+': 友好度'+s.friendliness+'</div>'});document.getElementById('diploStances').innerHTML=ds||'尚无外交关系';
+let dk='';if(state.darkImported.length>0){dk='已进口: '+state.darkImported.join(', ')}document.getElementById('darkStatus').innerHTML=dk;
+renderShop();
+}catch(e){console.error('updateUI error:',e);var ed=document.getElementById('errorDisplay');if(!ed){ed=document.createElement('div');ed.id='errorDisplay';ed.style.cssText='position:fixed;bottom:0;left:0;right:0;background:#5a2e2e;color:#fff;padding:8px;font-size:11px;z-index:999999;';document.body.appendChild(ed)}ed.innerHTML+='<div>❌ updateUI: '+e.message+'</div>'}}
+
+function renderShop(){try{let grid=document.getElementById('shopGrid');if(!grid)return;let html='';SHOP_ITEMS.forEach(item=>{let cb=false;let lb='购买';if(item.isTrade){if(item.id==='buy_money_wood'&&state.wood>=item.price)cb=true;else if(item.id==='buy_money_ore'&&state.ore>=item.price)cb=true;else if(item.id==='buy_money_steel'&&state.steel>=item.price)cb=true;lb='兑换'}else{if(state.money>=item.price)cb=true}html+='<div class="shop-item"><div class="name">'+item.name+'</div><div class="price">💰 '+item.price+'</div><div class="desc">'+item.desc+'</div><button onclick="buyShopItem(\''+item.id+'\')" '+(cb?'':'style="opacity:0.4;"')+'>'+lb+'</button></div>'});grid.innerHTML=html}catch(e){console.error('renderShop error:',e)}}
+
+function recordAction(){state.flag.lastActionTime=0;state.flag.noOperation=false;state.flag.actionCount++}
+function buildVillage(){if(state.wood<50||state.money<2300){addEvent('❌ 资源不足');toast('❌ 资源不足',true);return}state.wood-=50;state.money-=2300;state.houses[0]+=1;state.flag.totalHousesBuilt++;if(!state.flag.firstHouse){state.flag.firstHouse=true;unlockAchievement('【开家酒店！】')}if(state.flag.totalHousesBuilt>=100)unlockAchievement('【基建狂魔】');recordAction();addEvent('🏡 木屋建成');toast('🏡 木屋建成');updateUI()}
+function buildStoneHouse(){if(state.wood<30||state.steel<30||state.money<6000){addEvent('❌ 资源不足');toast('❌ 资源不足',true);return}state.wood-=30;state.steel-=30;state.money-=6000;state.houses[1]+=1;recordAction();addEvent('🏰 牢固房屋建成');toast('🏰 牢固房屋建成');updateUI()}
+function buildStrongHouse(){if(state.steel<150||state.money<36000){addEvent('❌ 资源不足');toast('❌ 资源不足',true);return}state.steel-=150;state.money-=36000;state.houses[2]+=1;recordAction();addEvent('🏯 坚固房屋建成');toast('🏯 坚固房屋建成');updateUI()}
+function buildFarm(){if(state.wood<2){addEvent('❌ 木材不足');toast('❌ 木材不足',true);return}state.wood-=2;state.farmland+=1;if(state.farmland===1)unlockAchievement('【面朝黄土背朝天】');recordAction();addEvent('🌱 耕地+1');toast('🌱 耕地+1');updateUI()}
+function upgradeLumber(){let c=[0,0,60,1360,2200,4350,6800,12000,22000,40000,75000,140000,260000,480000,880000,1600000,3000000,5500000,10000000,18000000,33000000,60000000,110000000,200000000,360000000,650000000,1200000000,2200000000,4000000000,7500000000,14000000000];let n=state.lumberLevel+1;if(n>30){addEvent('⚠️ 满级');toast('⚠️ 满级',true);return}if(state.wood<c[n]){addEvent('❌ 木材不足');toast('❌ 木材不足',true);return}state.wood-=c[n];state.lumberLevel=n;if(n===30)unlockAchievement('【惹我光头强，揍你没商量】');recordAction();addEvent('🪓 伐木场 Lv.'+n);toast('🪓 伐木场 Lv.'+n);updateUI()}
+function upgradeMine(){let c=[0,0,180,4080,19800,25400,81600,120000,220000,400000,750000,1400000,2600000,4800000,8800000,16000000,30000000,55000000,100000000,180000000,330000000,600000000,1100000000,2000000000,3600000000,6500000000,12000000000,22000000000,40000000000,75000000000,140000000000];let n=state.mineLevel+1;if(n>30){addEvent('⚠️ 满级');toast('⚠️ 满级',true);return}if(state.ore<c[n]){addEvent('❌ 矿石不足');toast('❌ 矿石不足',true);return}state.ore-=c[n];state.mineLevel=n;if(n===30)unlockAchievement('【Mine!All Mine!】');if(state.mineLevel>=3)unlockAchievement('【家里有矿】');recordAction();addEvent('⛏️ 采矿场 Lv.'+n);toast('⛏️ 采矿场 Lv.'+n);updateUI()}
+function buildRoad(){if(state.steel<3||state.money<80){addEvent('❌ 资源不足');toast('❌ 资源不足',true);return}state.steel-=3;state.money-=80;state.roadKm+=1;if(state.roadKm===1)unlockAchievement('【要致富，先修路】');if(state.roadKm>=50)unlockAchievement('【这是一条神奇的天路哎——】');recordAction();addEvent('🛤️ 交通+1km');toast('🛤️ 交通+1km');updateUI()}
+function recruitArmy(){let ma=Math.floor(state.population*0.8);if(state.army>=ma){addEvent('❌ 军队已达上限');toast('❌ 军队已达上限',true);return}if(state.population<10){addEvent('❌ 人口不足');toast('❌ 人口不足',true);return}let cost=Math.floor(state.population*0.05);if(state.food<cost){addEvent('❌ 粮食不足');toast('❌ 粮食不足',true);return}state.food-=cost;let r=Math.floor(state.population*0.02)+1;let ar=Math.min(r,ma-state.army);if(ar<=0){addEvent('❌ 无法招募');toast('❌ 无法招募',true);return}state.army+=ar;state.population-=ar;if(!state.flag.firstArmy){state.flag.firstArmy=true;unlockAchievement('【我们的征途是星辰大海】')}recordAction();addEvent('⚔️ 招募 '+ar+' 人');toast('⚔️ 招募 '+ar+' 人');updateUI()}
+function synthesizeSteel(){if(state.ore<2){addEvent('❌ 矿石不足');toast('❌ 矿石不足',true);return}state.ore-=2;state.steel+=1;if(state.steel===1)unlockAchievement('【获得升级】');recordAction();addEvent('🧱 合成钢筋');toast('🧱 合成钢筋');updateUI()}
+function autoSynthesize(){if(state.ore<2){addEvent('❌ 矿石不足');toast('❌ 矿石不足',true);return}let c=Math.floor(state.ore/2);state.ore-=c*2;state.steel+=c;addEvent('🧱 一键合成 '+c);toast('🧱 一键合成 '+c);recordAction();updateUI()}
+function techResearch(){if(state.wood<5||state.ore<8){addEvent('❌ 资源不足');toast('❌ 资源不足',true);return}state.wood-=5;state.ore-=8;state.tech+=2;recordAction();addEvent('🔬 科技+2');toast('🔬 科技+2');if(state.tech>=10)unlockAchievement('【燧人氏】');if(state.tech>=50)unlockAchievement('【四大发明】');if(state.tech>=100)unlockAchievement('【工业革命】');if(state.tech>=500)unlockAchievement('【信息时代】');if(state.tech>=1000)unlockAchievement('【星辰大海】');if(state.tech>=10000)unlockAchievement('【星际迷航】');if(state.tech>=2233)unlockAchievement('【2233】');if(state.tech>=1966)unlockAchievement('【建国大业】');updateUI()}
+function kuangyiAction(){if(state.kuangyi.cooldown>0){addEvent('⏳ 冷却中');toast('⏳ 冷却中',true);return}state.kuangyi.cooldown=30;state.kuangyi.count++;let s=Math.random()<0.4+state.tech*0.01;if(s){state.happiness=Math.min(100,state.happiness+5);state.tech+=1;state.kuangyi.successCount++;unlockAchievement('【大捷！】');if(state.kuangyi.successCount>=3)unlockAchievement('【我一分都没敢花，穷怕了】');if(state.kuangyi.successCount>=5)unlockAchievement('【摆正身位】');addEvent('⚡ 匡义成功',true);toast('⚡ 匡义成功')}else{state.happiness=Math.max(0,state.happiness-8);state.tech=Math.max(0,state.tech-1);addEvent('⚡ 匡义失败',true);toast('⚡ 匡义失败',true)}if(state.kuangyi.count===1)unlockAchievement('【匡义！】');if(state.kuangyi.count>=3650)unlockAchievement('【消耗战】');recordAction();updateUI()}
+function buyAC(){if(state.money<320){addEvent('❌ 钱不足');toast('❌ 钱不足',true);return}state.money-=320;if(!state.flag.firstAC){state.flag.firstAC=true;unlockAchievement('【是空调！我加了点空调！】')}if(state.flag.heatWaveDays>=15)unlockAchievement('【台下观众欣喜若狂啊】');recordAction();addEvent('❄️ 购买空调');toast('❄️ 购买空调');updateUI()}
+function buildHospital(){if(state.money<32000||state.steel<3600){addEvent('❌ 资源不足');toast('❌ 资源不足',true);return}state.money-=32000;state.steel-=3600;state.hospitals+=1;if(!state.flag.firstHospital){state.flag.firstHospital=true;unlockAchievement('【免费医疗，普惠大众！】')}recordAction();addEvent('🏥 医院建成');toast('🏥 医院建成');updateUI()}
+function toggleFreeMedical(){state.freeMedical=!state.freeMedical;if(state.freeMedical)unlockAchievement('【免费医疗，普惠大众！】');recordAction();addEvent('💊 免费医疗 '+(state.freeMedical?'开启':'关闭'));toast('💊 免费医疗 '+(state.freeMedical?'开启':'关闭'));updateUI()}
+function buildSchool(){if(state.money<30000||state.steel<5000||state.wood<2000){addEvent('❌ 资源不足');toast('❌ 资源不足',true);return}state.money-=30000;state.steel-=5000;state.wood-=2000;state.schools+=1;addEvent('🏫 学校建成');toast('🏫 学校建成');recordAction();updateUI()}
+function buildWarningCenter(){if(state.money<50000||state.steel<8000||state.wood<2000){addEvent('❌ 资源不足');toast('❌ 资源不足',true);return}state.money-=50000;state.steel-=8000;state.wood-=2000;state.warningCenters+=1;addEvent('📡 预警中心建成');toast('📡 预警中心建成');recordAction();updateUI()}
+function buildPsychCenter(){if(state.money<30000||state.steel<5000||state.wood<2000){addEvent('❌ 资源不足');toast('❌ 资源不足',true);return}state.money-=30000;state.steel-=5000;state.wood-=2000;state.psychCenters+=1;addEvent('🧠 心理咨询站建成');toast('🧠 心理咨询站建成');recordAction();updateUI()}
+function buildCommunityNet(){if(state.money<15000||state.steel<2000||state.wood<1000){addEvent('❌ 资源不足');toast('❌ 资源不足',true);return}state.money-=15000;state.steel-=2000;state.wood-=1000;state.communityNets+=1;addEvent('🤝 社区网络建成');toast('🤝 社区网络建成');recordAction();updateUI()}
+function buildSpecialtyHospital(){if(state.money<150000||state.steel<20000||state.wood<5000){addEvent('❌ 资源不足');toast('❌ 资源不足',true);return}state.money-=150000;state.steel-=20000;state.wood-=5000;state.specialtyHospitals+=1;addEvent('🏥 专科医院建成');toast('🏥 专科医院建成');recordAction();updateUI()}
+function buildOccupationalCenter(){if(state.money<50000||state.steel<8000||state.wood<2000){addEvent('❌ 资源不足');toast('❌ 资源不足',true);return}state.money-=50000;state.steel-=8000;state.wood-=2000;state.occupationalCenters+=1;addEvent('🦺 职业病防治中心建成');toast('🦺 职业病防治中心建成');recordAction();updateUI()}
+function emergencyIntervention(){if(state.money<10000||state.wood<1000){addEvent('❌ 资源不足');toast('❌ 资源不足',true);return}state.money-=10000;state.wood-=1000;state.happiness=Math.min(100,state.happiness+10);state.money=Math.floor(state.money*0.95);addEvent('🚨 紧急干预，幸福度+10');toast('🚨 紧急干预，幸福度+10');recordAction();updateUI()}
+function crimeCrack(){if(state.crimeEvent.active){state.crimeEvent.active=false;state.crimeRate=Math.max(0,state.crimeRate-10);if(!state.flag.firstCrime){state.flag.firstCrime=true;unlockAchievement('【Catch catch】')}recordAction();addEvent('🚔 犯罪嫌疑人被捕！');toast('🚔 犯罪嫌疑人被捕！');updateUI()}else{addEvent('⚠️ 无治安事件');toast('⚠️ 无治安事件',true)}}
+function sellResource(){let sold=false;if(state.food>100){let s=Math.min(state.food-100,50);state.food-=s;state.money+=s*state.priceFood;addEvent('💰 卖出 '+s+' 粮食');toast('💰 卖出 '+s+' 粮食');sold=true}else if(state.wood>10){let s=Math.min(state.wood-10,20);state.wood-=s;state.money+=s*state.priceWood;addEvent('💰 卖出 '+s+' 木材');toast('💰 卖出 '+s+' 木材');sold=true}else if(state.ore>10){let s=Math.min(state.ore-10,20);state.ore-=s;state.money+=s*state.priceOre;addEvent('💰 卖出 '+s+' 矿石');toast('💰 卖出 '+s+' 矿石');sold=true}else if(state.steel>5){let s=Math.min(state.steel-5,10);state.steel-=s;state.money+=s*state.priceSteel;addEvent('💰 卖出 '+s+' 钢筋');toast('💰 卖出 '+s+' 钢筋');sold=true}if(!sold){addEvent('❌ 无可售资源');toast('❌ 无可售资源',true)}if(sold){recordAction();updateUI()}}
+function setTax(){let r=prompt('输入税率(0-50):',Math.floor(state.taxRate*100));if(r===null)return;let v=parseFloat(r)/100;if(isNaN(v)||v<0||v>0.5){addEvent('❌ 无效');toast('❌ 无效',true);return}state.taxRate=v;if(v===0)unlockAchievement('【没有税收的我们国家】');if(v===0.2)unlockAchievement('【常税将军】');if(v===0.5)unlockAchievement('【大楚兴，陈胜王】');recordAction();addEvent('📊 税率 '+Math.floor(v*100)+'%');toast('📊 税率 '+Math.floor(v*100)+'%');updateUI()}
+function forceWeather(){updateWeather();recordAction()}
+function addDiplomacy(){let c=Math.min(80,30+state.tech*0.5+state.army*0.1+state.roadKm*0.05);if(Math.random()*100<c){state.diplomacy.allies+=1;if(!state.flag.firstDiplomacy){state.flag.firstDiplomacy=true;unlockAchievement('【幸会幸会】')}if(state.diplomacy.allies>=3)unlockAchievement('【亻尔女子】');if(state.diplomacy.allies>=30)unlockAchievement('【朋友满天下】');if(state.flag.noDiplomacy){state.flag.noDiplomacy=false}addEvent('🤝 建交成功！');toast('🤝 建交成功！');initDiploStances()}else{state.diplomacy.peaceCount+=1;if(state.diplomacy.peaceCount===1)unlockAchievement('【爱来不来！】');addEvent('💔 断交...');toast('💔 断交...',true)}recordAction();updateUI()}
+function buyShopItem(id){let item=SHOP_ITEMS.find(i=>i.id===id);if(!item)return;if(item.isTrade){if(item.id==='buy_money_wood'&&state.wood>=item.price){state.wood-=item.price;state.money+=100;addEvent('💰 换钱成功');toast('💰 换钱成功')}else if(item.id==='buy_money_ore'&&state.ore>=item.price){state.ore-=item.price;state.money+=150;addEvent('💰 换钱成功');toast('💰 换钱成功')}else if(item.id==='buy_money_steel'&&state.steel>=item.price){state.steel-=item.price;state.money+=180;addEvent('💰 换钱成功');toast('💰 换钱成功')}else{addEvent('❌ 资源不足');toast('❌ 资源不足',true);return}}else{if(state.money<item.price){addEvent('❌ 货币不足');toast('❌ 货币不足',true);return}state.money-=item.price;if(id==='shield_security'){state.flag.治安护盾=30;addEvent('🛡️ 治安护盾');toast('🛡️ 治安护盾')}else if(id==='shield_disaster'){state.flag.灾害护盾=30;addEvent('🛡️ 灾害护盾');toast('🛡️ 灾害护盾')}else if(id==='shield_clean'){state.flag.清洁护盾=30;addEvent('🛡️ 清洁护盾');toast('🛡️ 清洁护盾')}else if(id==='shield_happy'){state.flag.幸福护盾=30;addEvent('🛡️ 幸福护盾');toast('🛡️ 幸福护盾')}else if(id==='shield_medical'){state.flag.医疗护盾=30;addEvent('🛡️ 医疗护盾');toast('🛡️ 医疗护盾')}else if(id==='repair_wood'){addEvent('🔧 木房屋修缮');toast('🔧 木房屋修缮')}else if(id==='repair_stone'){addEvent('🔧 牢固房屋修缮');toast('🔧 牢固房屋修缮')}else if(id==='repair_strong'){addEvent('🔧 坚固房屋修缮');toast('🔧 坚固房屋修缮')}else if(id==='boat'){addEvent('🚣 救灾皮划艇');toast('🚣 救灾皮划艇')}else if(id==='repair_pack'){addEvent('📦 建材包');toast('📦 建材包')}else if(id==='greenhouse'){addEvent('🌱 钢化玻璃大棚');toast('🌱 钢化玻璃大棚')}}updateUI()}
+function doRedeem(){let i=document.getElementById('redeemInput');let c=i.value.trim();if(!c){addEvent('❌ 请输入兑换码');toast('❌ 请输入兑换码',true);return}
+if(c==='官方话题登榜第一'&&!state.redeemedCodes.includes(c)){state.redeemedCodes.push(c);unlockAchievement('【This is OUR game!】');addEvent('🎁 兑换成功！',true);toast('🎁 兑换成功！')}
+else if(c==='Ikjy制造'&&!state.redeemedCodes.includes(c)){state.redeemedCodes.push(c);unlockAchievement('【Rare Made】');state.money+=36800;state.wood+=5000;state.steel+=2500;confirm('你已获得Ikjy私信一对一解答三次的权限！');addEvent('🎁 兑换成功！',true);toast('🎁 兑换成功！')}
+else if(c==='ALways popular'&&!state.redeemedCodes.includes(c)){state.redeemedCodes.push(c);state.flag.治安护盾=180;state.flag.灾害护盾=90;state.flag.清洁护盾=100;state.money+=46500;addEvent('🎁 三护盾激活！',true);toast('🎁 三护盾激活！')}
+else if(c==='伟大的开始'&&!state.redeemedCodes.includes(c)){state.redeemedCodes.push(c);state.money+=3000;addEvent('🎁 兑换成功！',true);toast('🎁 兑换成功！');state.confessions.push('📜 开发者坦白(六): 哈喽~~~~ 恭喜你来到这个游戏！作为惯例，我会坦白一个我的信息——我习惯于喝水一次喝一大口，换算成一般一次性水杯大概是一杯半到两杯半。——管住Ikjy（awawawawawa）')}
+else if(c==='路漫漫其修远兮'&&!state.redeemedCodes.includes(c)){state.redeemedCodes.push(c);state.intlReputation+=20;addEvent('🎁 国际代币+20！',true);toast('🎁 国际代币+20！')}
+else if(c==='吾将上下而求索'&&!state.redeemedCodes.includes(c)){state.redeemedCodes.push(c);addEvent('🎁 获得3个【攻坚克难】！',true);toast('🎁 获得3个【攻坚克难】！')}
+else if(c==='间关莺语花底滑'&&!state.redeemedCodes.includes(c)){state.redeemedCodes.push(c);state.money+=500000;addEvent('🎁 获得500000货币！',true);toast('🎁 获得500000货币！')}
+else if(c==='幽咽泉流冰下难'&&!state.redeemedCodes.includes(c)){state.redeemedCodes.push(c);state.flag.治安护盾=200;state.flag.灾害护盾=200;state.flag.清洁护盾=200;state.flag.幸福护盾=200;state.flag.医疗护盾=200;addEvent('🎁 全护盾200日！',true);toast('🎁 全护盾200日！')}
+else{addEvent('❌ 无效或已使用');toast('❌ 无效或已使用',true)}
+i.value='';updateUI()}
+function exportSave(){try{let d=JSON.stringify(state);let b=new Blob([d],{type:'text/plain'});let a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='save_'+state.date.year+'_'+state.date.month+'_'+state.date.day+'.txt';a.click();unlockAchievement('【Check out】');addEvent('💾 存档已导出');toast('💾 存档已导出')}catch(e){addEvent('❌ 导出失败');toast('❌ 导出失败',true)}}
+document.getElementById('fileInput').addEventListener('change',function(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=function(ev){try{let d=JSON.parse(ev.target.result);if(d.population===undefined){addEvent('❌ 存档校验失败',true);toast('❌ 存档校验失败',true);return}Object.assign(state,d);unlockAchievement('【Check in】');addEvent('📂 读档成功！',true);toast('📂 读档成功！');updateUI()}catch(err){addEvent('❌ 导入失败',true);toast('❌ 导入失败',true)}};r.readAsText(f);e.target.value=''});
+function saveHistory(){try{let d=JSON.stringify(state);state.history.push(d);if(state.history.length>20)state.history.shift()}catch(e){}}
+document.getElementById('rollbackBtn').addEventListener('click',function(){if(state.history.length===0){addEvent('⏪ 无回溯点');toast('⏪ 无回溯点',true);return}let l=state.history.pop();try{let d=JSON.parse(l);Object.assign(state,d);addEvent('⏪ 回溯成功',true);toast('⏪ 回溯成功');updateUI()}catch(e){addEvent('❌ 回溯失败');toast('❌ 回溯失败',true)}});
+function toggleTheme(){document.body.classList.toggle('light-theme')}
+function changeCountryName(){let n=prompt('国家名称:',state.countryName||'未命名');if(n){state.countryName=n;updateUI();addEvent('📛 更名为: '+n);toast('📛 更名为: '+n)}}
+function toggleSpeed(){let b=document.getElementById('speedBtn');if(state.speed===1){state.speed=5;b.innerText='5x'}else if(state.speed===5){state.speed=20;b.innerText='20x'}else if(state.speed===20){state.speed=60;b.innerText='60x'}else{state.speed=1;b.innerText='1x'}applySpeed();toast('⏱️ 速度 '+b.innerText)}
+function toggleAutoSave(){state.autoSaveEnabled=!state.autoSaveEnabled;document.getElementById('autoSaveBtn').innerText=state.autoSaveEnabled?'开':'关';addEvent('💾 自动存档 '+(state.autoSaveEnabled?'开启':'关闭'));toast('💾 自动存档 '+(state.autoSaveEnabled?'开启':'关闭'))}
+function toggleAutoSynthesize(){state.autoSynthesizeEnabled=!state.autoSynthesizeEnabled;document.getElementById('autoSynthBtn').innerText=state.autoSynthesizeEnabled?'开':'关';addEvent('⚙️ 自动合成 '+(state.autoSynthesizeEnabled?'开启':'关闭'));toast('⚙️ 自动合成 '+(state.autoSynthesizeEnabled?'开启':'关闭'))}
+let autoDecideTimer=null;
+function toggleAutoDecide(){if(state.autoDecideEnabled){state.autoDecideEnabled=false;document.getElementById('autoDecideBtn').innerText='关';if(autoDecideTimer){clearInterval(autoDecideTimer);autoDecideTimer=null}addEvent('🤖 自动决策已关闭');toast('🤖 自动决策已关闭');return}let o=document.createElement('div');o.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:flex;justify-content:center;align-items:center;z-index:99999;flex-direction:column;gap:12px;color:#fff;padding:16px;text-align:center;font-size:13px;line-height:1.6;';o.innerHTML='<div style="max-width:500px;"><h2 style="color:#e86060;">⚠️ 警告</h2><p>由于决策AI行为的不可预测，此功能可能导致损失游戏体验，甚至可能打断现有计划、造成实质性损失，不建议启用，启用后导致的损失等开发者不承担恢复、赔偿等责任。确认要启用吗？</p><p style="color:#e8c860;" id="autoDecideCountdown">5秒后方可点击确认</p><div style="display:flex;gap:10px;justify-content:center;"><button id="autoDecideCancel" style="padding:6px 20px;border-radius:16px;border:none;background:#5a2e2e;color:#fff;cursor:pointer;">取消</button><button id="autoDecideConfirm" style="padding:6px 20px;border-radius:16px;border:none;background:#1a5a3a;color:#fff;cursor:pointer;opacity:0.4;" disabled>确认启用</button></div></div>';document.body.appendChild(o);let c=5;let i=setInterval(()=>{c--;document.getElementById('autoDecideCountdown').innerText=c+'秒后方可点击确认';if(c<=0){clearInterval(i);document.getElementById('autoDecideCountdown').innerText='现在可以点击确认了';document.getElementById('autoDecideConfirm').disabled=false;document.getElementById('autoDecideConfirm').style.opacity='1'}},1000);document.getElementById('autoDecideCancel').onclick=()=>{clearInterval(i);o.remove()};document.getElementById('autoDecideConfirm').onclick=()=>{if(document.getElementById('autoDecideConfirm').disabled)return;o.remove();state.autoDecideEnabled=true;document.getElementById('autoDecideBtn').innerText='开';addEvent('🤖 自动决策已启用');toast('🤖 自动决策已启用');autoDecideTimer=setInterval(()=>{if(!state.autoDecideEnabled||state.paused)return;if(state.wood>=60&&state.lumberLevel<30)upgradeLumber();else if(state.wood>=2&&state.farmland<state.population/5)buildFarm();else if(state.wood>=50&&state.money>=2300)buildVillage();else if(state.ore>=2)synthesizeSteel()},3000)}}
+let tutorialSteps=[],tutorialIndex=0;
+function initTutorial(){tutorialSteps=[{title:'👋 欢迎！',text:'嗨，欢迎来到这个游戏^^ 现在我——ikjy，将引导你去完成游戏的第一步。',action:null},{title:'📍 第一步',text:'现在，去建设第一个伐木场。点击「资源」标签页。',action:function(){switchTab('tab-resource')}},{title:'📍 第二步',text:'点击「升级伐木场」按钮建设伐木场。',action:function(){document.querySelector('[onclick="upgradeLumber()"]')?.click()}},{title:'✅ 很好！',text:'很好，现在你可以建设你的国家了！不过嘛，还有一项教程。点击「设置」标签页。',action:function(){switchTab('tab-settings')}},{title:'📍 第三步',text:'现在，点击兑换码输入框。当然，我不会白让你点的。',action:function(){switchTab('tab-redeem');document.getElementById('redeemInput').focus()}},{title:'🎁 新手兑换码',text:'我偷偷从Ikjy那里拿来了一些权限，现在我会给你新手兑换码："伟大的开始"。快输入一下看看吧。',action:function(){document.getElementById('redeemInput').value='伟大的开始';doRedeem()}},{title:'🎉 完成！',text:'好！现在奖励也到账了，可以自己建设国家了！需要暂停时直接点暂停按钮就行了哦！',action:function(){state.flag.tutorialDone=true;document.getElementById('tutorialOverlay').classList.remove('show')}}];tutorialIndex=0;showTutorialStep()}
+function showTutorialStep(){let o=document.getElementById('tutorialOverlay');let s=tutorialSteps[tutorialIndex];if(!s){o.classList.remove('show');return}document.getElementById('tutorialTitle').innerText=s.title;document.getElementById('tutorialText').innerText=s.text;document.getElementById('tutorialStep').innerText='步骤 '+(tutorialIndex+1)+'/'+tutorialSteps.length;document.getElementById('tutorialBtn').onclick=function(){if(s.action)s.action();tutorialIndex++;if(tutorialIndex<tutorialSteps.length){showTutorialStep()}else{o.classList.remove('show');state.flag.tutorialDone=true}};o.classList.add('show')}
+function switchTab(id){document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(tc=>tc.classList.remove('active'));document.querySelector('[data-tab="'+id+'"]')?.classList.add('active');document.getElementById(id)?.classList.add('active')}
+document.querySelectorAll('.tabs button').forEach(btn=>{btn.addEventListener('click',function(){document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));this.classList.add('active');document.querySelectorAll('.tab-content').forEach(tc=>tc.classList.remove('active'));document.getElementById(this.dataset.tab).classList.add('active')})});
+let tickInterval=null;
+function applySpeed(){if(tickInterval)clearInterval(tickInterval);tickInterval=setInterval(tick,1000/state.speed)}
+
+function showDisclaimerThenInit(){
+let o=document.createElement('div');
+o.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);display:flex;justify-content:center;align-items:center;z-index:999999;flex-direction:column;gap:12px;color:#fff;padding:16px;text-align:center;font-size:12px;line-height:1.6;';
+o.innerHTML='<div style="max-width:700px;"><h2 style="color:#e86060;font-size:16px;">⚠️ 前置免责声明</h2><p style="font-size:12px;text-align:left;">本游戏及其开发者十分清楚毒品的危害，并坚决不碰毒品，坚决抵制制毒贩毒吸毒等违法犯罪行为。以下涉及毒品及其原理的内容仅用于虚拟游戏开发及警示作用，不对玩家进行诱导、暗示。</p><p style="font-size:12px;text-align:left;">在运行“特殊贸易系统”时，必须对玩家提示“本游戏及其开发者十分清楚毒品的危害，并坚决不碰毒品，坚决抵制制毒贩毒吸毒等违法犯罪行为。所有涉及毒品及其原理的内容仅用于虚拟游戏开发及警示作用，不对玩家进行诱导、暗示。坚决抵制毒品是社会的共同责任，是社会稳定运行的底线，不容践踏。玩家应当了解毒品的危害，并清楚本游戏中所有涉及毒品及其原理的内容均为虚构，且本游戏及其开发者不提供任何毒品、吸毒工具、制毒原料及工具等一切涉及毒品及其原理的物品和服务。玩家应当知晓毒品及相关活动的危害及违法犯罪性质，坚决遵守法律法规，对毒品零容忍。因为玩家自行决断导致涉及毒品及其原理、活动造成或未造成后果的，与本游戏及其开发者无关。本游戏及其开发者已尽到提醒义务，在法律范围内免除一切责任。”</p><p style="color:#e8c860;font-size:14px;" id="disclaimerCountdown">5秒后方可点击确认</p><div style="display:flex;gap:10px;justify-content:center;"><button id="disclaimerCancel" style="padding:8px 24px;border-radius:16px;border:none;background:#5a2e2e;color:#fff;cursor:pointer;">取消</button><button id="disclaimerConfirm" style="padding:8px 24px;border-radius:16px;border:none;background:#1a5a3a;color:#fff;cursor:pointer;opacity:0.4;" disabled>确认</button></div></div>';
+document.body.appendChild(o);
+let c=5;
+let i=setInterval(()=>{c--;document.getElementById('disclaimerCountdown').innerText=c+'秒后方可点击确认';if(c<=0){clearInterval(i);document.getElementById('disclaimerCountdown').innerText='现在可以点击确认了';document.getElementById('disclaimerConfirm').disabled=false;document.getElementById('disclaimerConfirm').style.opacity='1'}},1000);
+document.getElementById('disclaimerCancel').onclick=()=>{window.location.href='about:blank'};
+document.getElementById('disclaimerConfirm').onclick=()=>{if(document.getElementById('disclaimerConfirm').disabled)return;o.remove();init()};
+}
+
+function init(){let n=prompt('请输入您的国家名称:','我的国家');if(n)state.countryName=n;addEvent('🏁 欢迎来到 '+state.countryName+'！');unlockAchievement('【第一话】');updateUI();document.getElementById('pauseBtn').addEventListener('click',function(){state.paused=!state.paused;this.innerText=state.paused?'▶️ 继续':'⏸️ 暂停';toast(state.paused?'⏸️ 已暂停':'▶️ 继续')});applySpeed();setInterval(()=>{let r=Math.random()*100;let ch=[[0.35,100],[3.65,70],[4.25,50],[4.75,20],[4.65,10],[5.15,5],[38.4,0],[6.45,-5],[5.65,-10],[6.65,-20],[7.85,-50],[6.75,-70],[5.45,-100]];let cum=0;for(let c of ch){cum+=c[0];if(r<=cum){let v=c[1]/100;state.priceWood=Math.max(1,state.priceWood*(1+v));state.priceOre=Math.max(1,state.priceOre*(1+v));state.priceSteel=Math.max(1,state.priceSteel*(1+v));state.priceFood=Math.max(1,state.priceFood*(1+v));break}}},3000);setTimeout(()=>{if(state.flag.actionCount===0&&state.date.year>=1)unlockAchievement('【恭喜你！啥都没动出新手村了！】')},5000);setTimeout(()=>{if(!state.flag.tutorialDone)initTutorial()},1000)}
+
+window.buildVillage=buildVillage;window.buildStoneHouse=buildStoneHouse;window.buildStrongHouse=buildStrongHouse;window.buildFarm=buildFarm;window.upgradeLumber=upgradeLumber;window.upgradeMine=upgradeMine;window.buildRoad=buildRoad;window.recruitArmy=recruitArmy;window.synthesizeSteel=synthesizeSteel;window.autoSynthesize=autoSynthesize;window.techResearch=techResearch;window.kuangyiAction=kuangyiAction;window.buyAC=buyAC;window.buildHospital=buildHospital;window.toggleFreeMedical=toggleFreeMedical;window.crimeCrack=crimeCrack;window.sellResource=sellResource;window.setTax=setTax;window.forceWeather=forceWeather;window.addDiplomacy=addDiplomacy;window.exportSave=exportSave;window.toggleTheme=toggleTheme;window.changeCountryName=changeCountryName;window.toggleSpeed=toggleSpeed;window.doRedeem=doRedeem;window.buyShopItem=buyShopItem;window.setLogMode=setLogMode;window.toggleAutoSave=toggleAutoSave;window.toggleAutoDecide=toggleAutoDecide;window.toggleAutoSynthesize=toggleAutoSynthesize;window.foundCity=foundCity;window.buildSchool=buildSchool;window.buildWarningCenter=buildWarningCenter;window.buildPsychCenter=buildPsychCenter;window.buildCommunityNet=buildCommunityNet;window.buildSpecialtyHospital=buildSpecialtyHospital;window.buildOccupationalCenter=buildOccupationalCenter;window.emergencyIntervention=emergencyIntervention;window.respondToMemory=respondToMemory;window.openDarkMarket=openDarkMarket;window.exportForTokens=exportForTokens;window.prohibitionAction=prohibitionAction;window.buyDarkGood=buyDarkGood;window.closeDialog=closeDialog;
+
+showDisclaimerThenInit();
+</script>
+</body>
+</html>
